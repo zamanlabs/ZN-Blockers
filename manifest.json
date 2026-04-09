@@ -73,6 +73,16 @@
         "path": "rules/easyprivacy-global.json"
       },
       {
+        "id": "easylist_global_ads",
+        "enabled": true,
+        "path": "rules/easylist-global.json"
+      },
+      {
+        "id": "adguard_base_ads",
+        "enabled": true,
+        "path": "rules/adguard-base-global.json"
+      },
+      {
         "id": "popup_redirect_shield",
         "enabled": true,
         "path": "rules/popup-redirect-shield.json"

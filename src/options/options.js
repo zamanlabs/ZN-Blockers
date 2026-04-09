@@ -1,6 +1,7 @@
 const DEFAULT_SETTINGS = Object.freeze({
   blockYoutubeNetworkEnabled: true,
   blockGlobalTrackersEnabled: true,
+  blockGlobalAdsEnabled: true,
   blockRedirectPopupsEnabled: true,
   blockFlashBannersEnabled: true,
   cleanupUiAdsEnabled: true
@@ -8,6 +9,7 @@ const DEFAULT_SETTINGS = Object.freeze({
 
 const blockGlobalTrackersToggle = document.getElementById("blockGlobalTrackersToggle");
 const blockYoutubeNetworkToggle = document.getElementById("blockYoutubeNetworkToggle");
+const blockGlobalAdsToggle = document.getElementById("blockGlobalAdsToggle");
 const blockFlashBannersToggle = document.getElementById("blockFlashBannersToggle");
 const blockRedirectPopupsToggle = document.getElementById("blockRedirectPopupsToggle");
 const cleanupUiAdsToggle = document.getElementById("cleanupUiAdsToggle");
@@ -60,6 +62,7 @@ async function loadSettings() {
 
   blockGlobalTrackersToggle.checked = Boolean(settings.blockGlobalTrackersEnabled);
   blockYoutubeNetworkToggle.checked = Boolean(settings.blockYoutubeNetworkEnabled);
+  blockGlobalAdsToggle.checked = Boolean(settings.blockGlobalAdsEnabled);
   blockFlashBannersToggle.checked = Boolean(settings.blockFlashBannersEnabled);
   blockRedirectPopupsToggle.checked = Boolean(settings.blockRedirectPopupsEnabled);
   cleanupUiAdsToggle.checked = Boolean(settings.cleanupUiAdsEnabled);
@@ -81,6 +84,7 @@ function wireSetting(toggle, settingKey) {
 
 wireSetting(blockGlobalTrackersToggle, "blockGlobalTrackersEnabled");
 wireSetting(blockYoutubeNetworkToggle, "blockYoutubeNetworkEnabled");
+wireSetting(blockGlobalAdsToggle, "blockGlobalAdsEnabled");
 wireSetting(blockFlashBannersToggle, "blockFlashBannersEnabled");
 wireSetting(blockRedirectPopupsToggle, "blockRedirectPopupsEnabled");
 wireSetting(cleanupUiAdsToggle, "cleanupUiAdsEnabled");

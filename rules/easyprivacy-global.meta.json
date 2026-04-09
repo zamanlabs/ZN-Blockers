@@ -1,6 +1,10 @@
 {
+  "id": "easyprivacy_global",
+  "name": "EasyPrivacy",
   "source": "rules/links.txt",
-  "generatedAt": "2026-04-09T12:10:37.869Z",
+  "sourceUrl": null,
+  "usedCache": false,
+  "generatedAt": "2026-04-09T18:09:55.734Z",
   "maxRules": 29000,
   "sourceTotalLines": 56049,
   "sourceRuleLines": 55264,

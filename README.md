@@ -5,6 +5,7 @@ ZN blocker is a Manifest V3 browser extension focused on YouTube cleanup, tracke
 ## Key Features
 
 - Global tracker blocking using generated EasyPrivacy-compatible rules.
+- Global ad blocking using generated EasyList and AdGuard Base rules.
 - YouTube-specific request filtering for ad and telemetry endpoints.
 - My Ad Center and sponsored surface cleanup on YouTube UI.
 - Flash and animated banner ad suppression on general websites.
@@ -20,17 +21,18 @@ ZN blocker is a Manifest V3 browser extension focused on YouTube cleanup, tracke
 ## Install From Release Assets
 
 1. Go to the project Releases page on GitHub.
-2. Download the latest package for your browser:
-    - `ZN-blocker-vX.Y.Z-chrome.zip`
-    - `ZN-blocker-vX.Y.Z-edge.zip`
-    - `ZN-blocker-vX.Y.Z-chromium.zip`
-3. Extract the archive to a local folder.
-4. Open your browser extension page:
+2. Download the latest package for your browser.
+3. Preferred package type is CRX:
+    - `ZN-blocker-vX.Y.Z-chrome.crx`
+    - `ZN-blocker-vX.Y.Z-edge.crx`
+    - `ZN-blocker-vX.Y.Z-chromium.crx`
+4. ZIP packages are also included for manual unpacked installs.
+5. Open your browser extension page:
     - Chrome: `chrome://extensions`
     - Edge: `edge://extensions`
-5. Enable Developer mode.
-6. Click Load unpacked.
-7. Select the extracted folder.
+6. Enable Developer mode.
+7. If CRX direct install is blocked by browser policy, use Load unpacked with ZIP extraction.
+8. Select the extracted folder.
 
 ## Install From Source
 
@@ -41,6 +43,11 @@ ZN blocker is a Manifest V3 browser extension focused on YouTube cleanup, tracke
 npm run build:icons
 npm run build:rules
 ```
+
+Rule generation pulls current filter databases from:
+
+- https://easylist.to/easylist/easylist.txt
+- https://filters.adtidy.org/extension/chromium/filters/2.txt
 
 3. Load unpacked using Chrome/Edge extension page.
 
@@ -56,7 +63,8 @@ npm run build:release
 
 - Packaging script: `scripts/package-release.ps1`
 - Output folder: `dist/`
-- Produces browser-targeted ZIP assets and SHA256 checksums.
+- Produces browser-targeted CRX and ZIP assets plus SHA256 checksums.
+- Uses signing key: `keys/zn-blocker-release.pem` (generated automatically on first packaging run).
 
 ## Contributing
 

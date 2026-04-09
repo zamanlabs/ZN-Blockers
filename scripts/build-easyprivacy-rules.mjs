@@ -1,13 +1,41 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const INPUT_PATH = path.resolve("rules", "links.txt");
-const OUTPUT_PATH = path.resolve("rules", "easyprivacy-global.json");
-const META_PATH = path.resolve("rules", "easyprivacy-global.meta.json");
-
-const MAX_RULES = Number(process.env.MAX_RULES || "29000");
+const MAX_RULES_DEFAULT = toMaxRules(process.env.MAX_RULES, 29000);
 const MAX_URL_FILTER_LENGTH = 900;
 const MAX_DOMAINS_PER_SIDE = 100;
+
+const LIST_SPECS = [
+  {
+    id: "easyprivacy_global",
+    name: "EasyPrivacy",
+    sourceType: "file",
+    sourcePath: path.resolve("rules", "links.txt"),
+    outputPath: path.resolve("rules", "easyprivacy-global.json"),
+    metaPath: path.resolve("rules", "easyprivacy-global.meta.json"),
+    maxRules: toMaxRules(process.env.MAX_RULES_EASYPRIVACY, MAX_RULES_DEFAULT)
+  },
+  {
+    id: "easylist_global_ads",
+    name: "EasyList",
+    sourceType: "url",
+    sourceUrl: "https://easylist.to/easylist/easylist.txt",
+    cachePath: path.resolve("rules", "sources", "easylist.txt"),
+    outputPath: path.resolve("rules", "easylist-global.json"),
+    metaPath: path.resolve("rules", "easylist-global.meta.json"),
+    maxRules: toMaxRules(process.env.MAX_RULES_EASYLIST, MAX_RULES_DEFAULT)
+  },
+  {
+    id: "adguard_base_ads",
+    name: "AdGuard Base",
+    sourceType: "url",
+    sourceUrl: "https://filters.adtidy.org/extension/chromium/filters/2.txt",
+    cachePath: path.resolve("rules", "sources", "adguard-base.txt"),
+    outputPath: path.resolve("rules", "adguard-base-global.json"),
+    metaPath: path.resolve("rules", "adguard-base-global.meta.json"),
+    maxRules: toMaxRules(process.env.MAX_RULES_ADGUARD, MAX_RULES_DEFAULT)
+  }
+];
 
 const RESOURCE_TYPE_MAP = new Map([
   ["script", "script"],
@@ -45,6 +73,20 @@ const UNSUPPORTED_OPTION_PREFIXES = [
   "to",
   "urltransform"
 ];
+
+function toMaxRules(rawValue, fallback) {
+  const parsed = Number(rawValue);
+
+  if (!Number.isFinite(parsed) || parsed < 1000) {
+    return fallback;
+  }
+
+  return Math.floor(parsed);
+}
+
+function toRelativePath(filePath) {
+  return path.relative(process.cwd(), filePath).replace(/\\/g, "/");
+}
 
 function isCommentOrEmptyLine(line) {
   return !line || line.startsWith("!") || line.startsWith("[");
@@ -278,10 +320,63 @@ function incrementCounter(counterMap, key) {
   counterMap.set(key, current + 1);
 }
 
-async function main() {
-  const sourceText = await fs.readFile(INPUT_PATH, "utf8");
-  const lines = sourceText.split(/\r?\n/);
+async function readSource(spec) {
+  if (spec.sourceType === "file") {
+    const sourceText = await fs.readFile(spec.sourcePath, "utf8");
+    return {
+      sourceText,
+      sourceDescriptor: toRelativePath(spec.sourcePath),
+      usedCache: false
+    };
+  }
 
+  try {
+    const response = await fetch(spec.sourceUrl, {
+      headers: {
+        "user-agent": "ZN-blocker-rule-builder/1.0"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const sourceText = await response.text();
+
+    if (spec.cachePath) {
+      await fs.mkdir(path.dirname(spec.cachePath), {
+        recursive: true
+      });
+      await fs.writeFile(spec.cachePath, sourceText, "utf8");
+    }
+
+    return {
+      sourceText,
+      sourceDescriptor: spec.sourceUrl,
+      usedCache: false
+    };
+  } catch (error) {
+    if (!spec.cachePath) {
+      throw error;
+    }
+
+    try {
+      const sourceText = await fs.readFile(spec.cachePath, "utf8");
+      return {
+        sourceText,
+        sourceDescriptor: `${spec.sourceUrl} (cache: ${toRelativePath(spec.cachePath)})`,
+        usedCache: true
+      };
+    } catch {
+      throw new Error(
+        `Failed to download ${spec.sourceUrl} and no cache found at ${toRelativePath(spec.cachePath)}: ${String(error)}`
+      );
+    }
+  }
+}
+
+function buildRulesFromSource(sourceText, maxRules) {
+  const lines = sourceText.split(/\r?\n/);
   const rules = [];
   const skippedReasons = new Map();
 
@@ -298,7 +393,7 @@ async function main() {
 
     sourceRuleLines += 1;
 
-    if (rules.length >= MAX_RULES) {
+    if (rules.length >= maxRules) {
       incrementCounter(skippedReasons, "max-rules-reached");
       continue;
     }
@@ -320,28 +415,66 @@ async function main() {
     rules.push(rule);
   }
 
-  const metadata = {
-    source: path.relative(process.cwd(), INPUT_PATH).replace(/\\/g, "/"),
-    generatedAt: new Date().toISOString(),
-    maxRules: MAX_RULES,
+  return {
+    rules,
     sourceTotalLines: lines.length,
     sourceRuleLines,
-    generatedRules: rules.length,
     blockRules,
     allowRules,
     skippedByReason: Object.fromEntries(
       [...skippedReasons.entries()].sort((a, b) => b[1] - a[1])
     )
   };
+}
 
-  await fs.writeFile(OUTPUT_PATH, JSON.stringify(rules, null, 2), "utf8");
-  await fs.writeFile(META_PATH, JSON.stringify(metadata, null, 2), "utf8");
+async function buildList(spec) {
+  const { sourceText, sourceDescriptor, usedCache } = await readSource(spec);
+  const built = buildRulesFromSource(sourceText, spec.maxRules);
 
-  console.log("EasyPrivacy conversion complete");
-  console.log(`Generated rules: ${metadata.generatedRules}`);
-  console.log(`Block rules: ${metadata.blockRules}`);
-  console.log(`Allow rules: ${metadata.allowRules}`);
-  console.log(`Metadata: ${path.relative(process.cwd(), META_PATH)}`);
+  const metadata = {
+    id: spec.id,
+    name: spec.name,
+    source: sourceDescriptor,
+    sourceUrl: spec.sourceType === "url" ? spec.sourceUrl : null,
+    usedCache,
+    generatedAt: new Date().toISOString(),
+    maxRules: spec.maxRules,
+    sourceTotalLines: built.sourceTotalLines,
+    sourceRuleLines: built.sourceRuleLines,
+    generatedRules: built.rules.length,
+    blockRules: built.blockRules,
+    allowRules: built.allowRules,
+    skippedByReason: built.skippedByReason
+  };
+
+  await fs.writeFile(spec.outputPath, JSON.stringify(built.rules, null, 2), "utf8");
+  await fs.writeFile(spec.metaPath, JSON.stringify(metadata, null, 2), "utf8");
+
+  return {
+    id: spec.id,
+    name: spec.name,
+    outputPath: toRelativePath(spec.outputPath),
+    metaPath: toRelativePath(spec.metaPath),
+    metadata
+  };
+}
+
+async function main() {
+  const summaries = [];
+
+  for (const spec of LIST_SPECS) {
+    const summary = await buildList(spec);
+    summaries.push(summary);
+
+    console.log(`Built ${summary.name}`);
+    console.log(`  Rules: ${summary.metadata.generatedRules}`);
+    console.log(`  Output: ${summary.outputPath}`);
+    console.log(`  Meta: ${summary.metaPath}`);
+    console.log(`  Cache mode: ${summary.metadata.usedCache ? "fallback" : "live"}`);
+  }
+
+  const totalRules = summaries.reduce((acc, entry) => acc + entry.metadata.generatedRules, 0);
+  console.log(`Total generated rules across lists: ${totalRules}`);
 }
 
 main().catch((error) => {

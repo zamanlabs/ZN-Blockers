@@ -1,6 +1,7 @@
 const DEFAULT_SETTINGS = Object.freeze({
   blockYoutubeNetworkEnabled: true,
   blockGlobalTrackersEnabled: true,
+  blockGlobalAdsEnabled: true,
   blockRedirectPopupsEnabled: true,
   blockFlashBannersEnabled: true,
   cleanupUiAdsEnabled: true
@@ -10,20 +11,25 @@ const LEGACY_SETTING_KEY_MAP = Object.freeze({
   blockTrackersEnabled: "blockYoutubeNetworkEnabled"
 });
 
-const RULESET_BY_SETTING = Object.freeze({
-  blockYoutubeNetworkEnabled: "youtube_core",
-  blockGlobalTrackersEnabled: "easyprivacy_global",
-  blockRedirectPopupsEnabled: "popup_redirect_shield"
+const RULESETS_BY_SETTING = Object.freeze({
+  blockYoutubeNetworkEnabled: ["youtube_core"],
+  blockGlobalTrackersEnabled: ["easyprivacy_global"],
+  blockGlobalAdsEnabled: ["easylist_global_ads", "adguard_base_ads"],
+  blockRedirectPopupsEnabled: ["popup_redirect_shield"]
 });
 
 const RULESET_LABELS = Object.freeze({
   youtube_core: "YouTube Core",
   easyprivacy_global: "EasyPrivacy Global",
+  easylist_global_ads: "EasyList Global Ads",
+  adguard_base_ads: "AdGuard Base Ads",
   popup_redirect_shield: "Popup Redirect Shield"
 });
 
-const RULESET_IDS = Object.freeze(Object.values(RULESET_BY_SETTING));
-const RULE_CONTROL_KEYS = new Set(Object.keys(RULESET_BY_SETTING));
+const RULESET_IDS = Object.freeze(
+  [...new Set(Object.values(RULESETS_BY_SETTING).flat())]
+);
+const RULE_CONTROL_KEYS = new Set(Object.keys(RULESETS_BY_SETTING));
 
 const DIAGNOSTICS_STORAGE_KEY = "diagnosticsState";
 const DIAGNOSTICS_FLUSH_DELAY_MS = 1500;
@@ -240,6 +246,20 @@ async function loadStaticRuleCounts() {
       }
 
       try {
+        const easyListMeta = await readJsonFromRuntime("rules/easylist-global.meta.json");
+        counts.easylist_global_ads = toNonNegativeInteger(easyListMeta.generatedRules, null);
+      } catch {
+        counts.easylist_global_ads = null;
+      }
+
+      try {
+        const adGuardBaseMeta = await readJsonFromRuntime("rules/adguard-base-global.meta.json");
+        counts.adguard_base_ads = toNonNegativeInteger(adGuardBaseMeta.generatedRules, null);
+      } catch {
+        counts.adguard_base_ads = null;
+      }
+
+      try {
         const popupRedirectShield = await readJsonFromRuntime(
           "rules/popup-redirect-shield.json"
         );
@@ -391,11 +411,11 @@ function getRulesetUpdatePayload(settings) {
   const enableRulesetIds = [];
   const disableRulesetIds = [];
 
-  for (const [settingKey, rulesetId] of Object.entries(RULESET_BY_SETTING)) {
-    if (Boolean(settings[settingKey])) {
-      enableRulesetIds.push(rulesetId);
-    } else {
-      disableRulesetIds.push(rulesetId);
+  for (const [settingKey, rulesetIds] of Object.entries(RULESETS_BY_SETTING)) {
+    const target = Boolean(settings[settingKey]) ? enableRulesetIds : disableRulesetIds;
+
+    for (const rulesetId of rulesetIds) {
+      target.push(rulesetId);
     }
   }
 
@@ -429,6 +449,7 @@ async function syncBlockingState() {
   const isAnyBlockingEnabled = Boolean(
     settings.blockYoutubeNetworkEnabled ||
       settings.blockGlobalTrackersEnabled ||
+      settings.blockGlobalAdsEnabled ||
       settings.blockRedirectPopupsEnabled
   );
 

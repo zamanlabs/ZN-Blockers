@@ -13,6 +13,7 @@ const AD_RENDERER_SELECTORS = [
   "ytd-display-ad-renderer",
   "ytd-video-masthead-ad-v3-renderer",
   "ytd-ad-slot-renderer",
+  "ytd-reel-ad-slot-renderer",
   "ytm-ad-slot-renderer",
   "ytd-action-companion-ad-renderer",
   "ytd-banner-promo-renderer",
@@ -74,12 +75,17 @@ const CARD_CONTAINER_SELECTOR = [
   "ytd-rich-item-renderer",
   "ytd-item-section-renderer",
   "ytd-rich-section-renderer",
+  "ytd-reel-item-renderer",
+  "ytd-reel-video-renderer",
+  "ytd-horizontal-card-list-renderer",
   "ytm-video-with-context-renderer",
   "ytm-item-section-renderer"
 ].join(",");
 
 const SPONSORED_BADGE_SELECTORS = [
   "ytd-badge-supported-renderer",
+  ".badge-style-type-sponsored",
+  "yt-formatted-string.ytd-badge-supported-renderer",
   "ytm-badge-and-byline-renderer",
   "span.badge",
   "span.metadata-badge"
@@ -87,12 +93,44 @@ const SPONSORED_BADGE_SELECTORS = [
 
 const SPONSORED_PHRASES = [
   "sponsored",
+  "sponsored by",
+  "sponsor",
   "promoted",
+  "brought to you by",
+  "paid partnership",
   "paid promotion",
+  "includes paid promotion",
   "advertisement",
   "my ad center",
   "from your my ad center"
 ];
+
+const PLAYER_AD_SELECTORS = [
+  "#player-ads",
+  ".video-ads",
+  ".ytp-ad-module",
+  ".ytp-ad-player-overlay",
+  ".ytp-ad-preview-container",
+  ".ytp-ad-progress-list",
+  ".ytp-ad-image-overlay",
+  ".ytp-ad-survey",
+  ".ytp-ad-action-interstitial",
+  ".ytp-ad-overlay-container"
+].join(",");
+
+const BYLINE_SPONSORED_SELECTORS = [
+  "ytd-video-renderer #byline-container",
+  "ytd-video-renderer #metadata-line",
+  "ytd-grid-video-renderer #byline-container",
+  "ytd-grid-video-renderer #metadata-line",
+  "ytd-rich-item-renderer #byline-container",
+  "ytd-rich-item-renderer #metadata-line",
+  "ytd-compact-video-renderer #byline-container",
+  "ytd-compact-video-renderer #metadata-line",
+  "ytd-reel-item-renderer #byline-container",
+  "ytm-video-with-context-renderer .item-byline",
+  "ytm-video-with-context-renderer .secondary-text"
+].join(",");
 
 const AD_LINK_SELECTORS = [
   "a[href*='googleadservices.com']",
@@ -226,6 +264,34 @@ function hideMyAdCenterAds(root = document) {
   }
 }
 
+function hidePlayerAdOverlays(root = document) {
+  const overlays = queryAllIncludingRoot(root, PLAYER_AD_SELECTORS);
+
+  for (const overlay of overlays) {
+    hideElement(overlay);
+  }
+}
+
+function hideSponsoredBylineCards(root = document) {
+  const bylines = queryAllIncludingRoot(root, BYLINE_SPONSORED_SELECTORS);
+
+  for (const byline of bylines) {
+    if (!isSponsoredText(byline.textContent || "")) {
+      continue;
+    }
+
+    const card =
+      findCardContainer(byline) ||
+      byline.closest(
+        "ytd-rich-section-renderer, ytd-item-section-renderer, ytd-reel-item-renderer"
+      );
+
+    if (card) {
+      hideElement(card);
+    }
+  }
+}
+
 function hideSponsoredSections(root = document) {
   const sectionTitles = queryAllIncludingRoot(root, SPONSORED_SECTION_TITLE_SELECTORS);
 
@@ -245,7 +311,9 @@ function hideSponsoredSections(root = document) {
 function runCleanup(root = document) {
   hideAdRenderers(root);
   hideAdCenterPanels(root);
+  hidePlayerAdOverlays(root);
   hideSponsoredCards(root);
+  hideSponsoredBylineCards(root);
   hideCardsWithAdLinks(root);
   hideMyAdCenterAds(root);
   hideSponsoredSections(root);
