@@ -107,6 +107,11 @@ function isUnsupportedPattern(pattern) {
     return true;
   }
 
+  // Chrome DNR rejects domain-anchor patterns with an immediate wildcard, e.g. ||*.example.com^
+  if (pattern.startsWith("||*")) {
+    return true;
+  }
+
   if (pattern.startsWith("/") && pattern.endsWith("/") && pattern.length > 1) {
     return true;
   }
