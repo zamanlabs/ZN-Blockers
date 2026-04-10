@@ -3,6 +3,9 @@ const DEFAULT_SETTINGS = Object.freeze({
   blockGlobalTrackersEnabled: true,
   blockGlobalAdsEnabled: true,
   blockOemGoogleTrackingEnabled: true,
+  blockAutoLearningEnabled: true,
+  adaptiveAllowlistHosts: [],
+  adaptiveDenylistHosts: [],
   blockRedirectPopupsEnabled: true,
   blockFlashBannersEnabled: true,
   cleanupUiAdsEnabled: true
@@ -49,8 +52,8 @@ let statusTimer = null;
 function getDefaultHintText() {
   const isCompact = window.matchMedia("(max-width: 520px)").matches;
   return isCompact
-    ? "Simple mode: four shields cover web ads, YouTube, OEM telemetry, and visual traps."
-    : "Simple mode enabled. Use Open Settings for advanced diagnostics and status insights.";
+    ? "Simple mode: shields cover web ads, YouTube, telemetry, visual traps, and adaptive learning."
+    : "Use right-click on page content to block specific ads or popups.";
 }
 
 function setHintText(message, isError = false) {

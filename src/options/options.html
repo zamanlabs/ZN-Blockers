@@ -18,14 +18,14 @@
             height="62"
           />
           <div class="hero-copy">
-            <p class="eyebrow">Premium Policy Deck</p>
+            <p class="eyebrow">Protection Settings</p>
             <h1>ZN blocker Settings</h1>
-            <p>Configure a layered ad-block strategy tuned for YouTube sponsorship, redirect traps, and global ad-tech traffic.</p>
+            <p>Manage core shields, adaptive blocking behavior, and host-level controls.</p>
           </div>
         </div>
         <div class="hero-actions">
           <button id="openDiagnosticsButton" class="hero-button" type="button">Diagnostics</button>
-          <p class="hero-note">Policy changes sync instantly across popup, settings, and diagnostics.</p>
+          <p class="hero-note">Changes apply immediately across popup, settings, and diagnostics.</p>
         </div>
       </header>
 
@@ -122,11 +122,60 @@
         </label>
       </section>
 
+      <section class="card adaptive-card" aria-label="Adaptive diagnostics panel">
+        <h2>Adaptive Diagnostics</h2>
+        <div class="adaptive-stats">
+          <article>
+            <p>Tracked Candidates</p>
+            <strong id="adaptiveTrackedValue">-</strong>
+          </article>
+          <article>
+            <p>Promoted Rules</p>
+            <strong id="adaptivePromotedValue">-</strong>
+          </article>
+          <article>
+            <p>Ready to Promote</p>
+            <strong id="adaptiveReadyValue">-</strong>
+          </article>
+          <article>
+            <p>Manual Host Blocks</p>
+            <strong id="adaptiveManualValue">-</strong>
+          </article>
+        </div>
+        <p id="adaptiveStatusText" class="adaptive-note" aria-live="polite">Loading adaptive state...</p>
+      </section>
+
+      <section class="card host-lists-card" aria-label="Adaptive host controls">
+        <h2>Adaptive Host Controls</h2>
+        <p class="host-help">
+          Allow list hosts are skipped by adaptive learning and manual block actions. Deny list hosts are promoted immediately when detected.
+        </p>
+
+        <div class="host-grid">
+          <article class="host-editor">
+            <h3>Allow list</h3>
+            <div class="host-input-row">
+              <input id="allowHostInput" type="text" placeholder="example.com" spellcheck="false" />
+              <button id="addAllowHostButton" type="button" class="host-add-button">Add</button>
+            </div>
+            <ul id="allowHostList" class="host-list" aria-label="Allow list hosts"></ul>
+          </article>
+
+          <article class="host-editor">
+            <h3>Deny list</h3>
+            <div class="host-input-row">
+              <input id="denyHostInput" type="text" placeholder="tracker.example.com" spellcheck="false" />
+              <button id="addDenyHostButton" type="button" class="host-add-button">Add</button>
+            </div>
+            <ul id="denyHostList" class="host-list" aria-label="Deny list hosts"></ul>
+          </article>
+        </div>
+      </section>
+
       <section class="card info">
-        <h2>Edge Canary Mobile Integration</h2>
+        <h2>Mobile Support</h2>
         <p>
-          This UI is optimized for touch controls, narrow viewports, and safe-area insets.
-          It keeps settings reachable on smaller screens and larger pointer targets for mobile use.
+          This layout keeps controls readable and touch-friendly on narrow screens.
         </p>
         <p id="mobileModeText" class="mobile-mode" aria-live="polite"></p>
       </section>

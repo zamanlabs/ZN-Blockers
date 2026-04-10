@@ -4,6 +4,8 @@ const DEFAULT_SETTINGS = Object.freeze({
   blockGlobalAdsEnabled: true,
   blockOemGoogleTrackingEnabled: true,
   blockAutoLearningEnabled: true,
+  adaptiveAllowlistHosts: [],
+  adaptiveDenylistHosts: [],
   blockRedirectPopupsEnabled: true,
   blockFlashBannersEnabled: true,
   cleanupUiAdsEnabled: true
@@ -51,6 +53,29 @@ const AUTO_LEARN_PROMOTE_HITS = 4;
 const AUTO_LEARN_PROMOTE_SITE_COUNT = 2;
 const AUTO_LEARN_DEDUPE_WINDOW_MS = 30000;
 const AUTO_LEARN_DEDUPE_CACHE_MAX = 3000;
+
+const CONTEXT_MENU_BLOCK_CONTENT_ID = "zn_block_content";
+
+const MANUAL_BLOCK_STORAGE_KEY = "manualBlockState";
+const MANUAL_BLOCK_FLUSH_DELAY_MS = 2000;
+const MANUAL_RULE_ID_START = 400000;
+const MANUAL_RULE_ID_END = 499999;
+const MANUAL_MAX_HOST_RULES = 1000;
+const MANUAL_MAX_HIDE_RULES_PER_SITE = 60;
+const MANUAL_MAX_HIDE_SITES = 500;
+
+const MANUAL_BLOCK_RESOURCE_TYPES = Object.freeze([
+  "main_frame",
+  "sub_frame",
+  "script",
+  "image",
+  "stylesheet",
+  "xmlhttprequest",
+  "media",
+  "font",
+  "ping",
+  "other"
+]);
 
 const AUTO_LEARN_TRACKING_HOST_SUFFIXES = Object.freeze([
   "doubleclick.net",
@@ -135,6 +160,12 @@ let autoLearnDedupeCache = new Map();
 let autoLearnWebRequestListener = null;
 let autoLearningEnabled = true;
 let autoLearningHydrated = false;
+let adaptiveAllowlistHosts = new Set();
+let adaptiveDenylistHosts = new Set();
+
+let manualBlockStatePromise = null;
+let manualBlockFlushTimer = null;
+let manualBlockingHydrated = false;
 
 function toMessageError(error) {
   if (error instanceof Error) {
@@ -528,9 +559,12 @@ function normalizeAutoLearnState(rawState) {
   }
 
   const normalized = {
-    nextRuleId: Math.max(
-      toNonNegativeInteger(rawState.nextRuleId, AUTO_LEARN_RULE_ID_START),
-      AUTO_LEARN_RULE_ID_START
+    nextRuleId: Math.min(
+      Math.max(
+        toNonNegativeInteger(rawState.nextRuleId, AUTO_LEARN_RULE_ID_START),
+        AUTO_LEARN_RULE_ID_START
+      ),
+      MANUAL_RULE_ID_START - 1
     ),
     candidates: {},
     promoted: {}
@@ -563,7 +597,7 @@ function normalizeAutoLearnState(rawState) {
 
       const ruleId = toNonNegativeInteger(value?.ruleId, 0);
 
-      if (ruleId < AUTO_LEARN_RULE_ID_START) {
+      if (ruleId < AUTO_LEARN_RULE_ID_START || ruleId >= MANUAL_RULE_ID_START) {
         continue;
       }
 
@@ -622,6 +656,49 @@ function normalizeHost(host) {
     .toLowerCase()
     .replace(/^www\./, "")
     .replace(/\.$/, "");
+}
+
+function normalizeHostList(rawHosts) {
+  if (!Array.isArray(rawHosts)) {
+    return [];
+  }
+
+  const next = [];
+  const seen = new Set();
+
+  for (const rawHost of rawHosts) {
+    const normalized = normalizeHost(rawHost);
+
+    if (!normalized || !/^[a-z0-9.-]+$/i.test(normalized) || seen.has(normalized)) {
+      continue;
+    }
+
+    seen.add(normalized);
+    next.push(normalized);
+  }
+
+  return next;
+}
+
+function isHostInSet(host, hostSet) {
+  const normalized = normalizeHost(host);
+
+  if (!normalized || !hostSet || hostSet.size === 0) {
+    return false;
+  }
+
+  for (const listedHost of hostSet) {
+    if (normalized === listedHost || normalized.endsWith(`.${listedHost}`)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function updateAdaptiveHostSets(settings) {
+  adaptiveAllowlistHosts = new Set(normalizeHostList(settings.adaptiveAllowlistHosts));
+  adaptiveDenylistHosts = new Set(normalizeHostList(settings.adaptiveDenylistHosts));
 }
 
 function getSiteKey(host) {
@@ -833,41 +910,431 @@ function parseHttpUrl(rawUrl, baseUrl = undefined) {
   }
 }
 
-async function tryPromoteAutoLearnCandidate(state, candidate) {
-  if (!candidate || Object.hasOwn(state.promoted, candidate.host)) {
+function createManualBlockState() {
+  return {
+    nextRuleId: MANUAL_RULE_ID_START,
+    hostRules: {},
+    hideRulesBySite: {}
+  };
+}
+
+function normalizeManualHostRuleEntry(host, rawEntry) {
+  const normalizedHost = normalizeHost(host);
+
+  if (!normalizedHost || typeof rawEntry !== "object" || !rawEntry) {
+    return null;
+  }
+
+  const ruleId = toNonNegativeInteger(rawEntry.ruleId, 0);
+
+  if (ruleId < MANUAL_RULE_ID_START || ruleId > MANUAL_RULE_ID_END) {
+    return null;
+  }
+
+  return {
+    host: normalizedHost,
+    ruleId,
+    addedAt: toNonNegativeInteger(rawEntry.addedAt, Date.now()),
+    sourcePageHost: normalizeHost(rawEntry.sourcePageHost)
+  };
+}
+
+function normalizeManualHideSelector(rawSelector) {
+  if (typeof rawSelector !== "string") {
+    return "";
+  }
+
+  const trimmed = rawSelector.trim();
+
+  if (!trimmed || trimmed.length > 280) {
+    return "";
+  }
+
+  return trimmed;
+}
+
+function normalizeManualBlockState(rawState) {
+  const fallback = createManualBlockState();
+
+  if (!rawState || typeof rawState !== "object") {
+    return fallback;
+  }
+
+  const normalized = {
+    nextRuleId: Math.max(
+      toNonNegativeInteger(rawState.nextRuleId, MANUAL_RULE_ID_START),
+      MANUAL_RULE_ID_START
+    ),
+    hostRules: {},
+    hideRulesBySite: {}
+  };
+
+  if (rawState.hostRules && typeof rawState.hostRules === "object") {
+    for (const [host, rawEntry] of Object.entries(rawState.hostRules)) {
+      if (Object.keys(normalized.hostRules).length >= MANUAL_MAX_HOST_RULES) {
+        break;
+      }
+
+      const entry = normalizeManualHostRuleEntry(host, rawEntry);
+
+      if (!entry) {
+        continue;
+      }
+
+      normalized.hostRules[entry.host] = {
+        ruleId: entry.ruleId,
+        addedAt: entry.addedAt,
+        sourcePageHost: entry.sourcePageHost
+      };
+
+      normalized.nextRuleId = Math.max(normalized.nextRuleId, entry.ruleId + 1);
+    }
+  }
+
+  if (rawState.hideRulesBySite && typeof rawState.hideRulesBySite === "object") {
+    const siteEntries = Object.entries(rawState.hideRulesBySite).slice(0, MANUAL_MAX_HIDE_SITES);
+
+    for (const [site, rawSelectors] of siteEntries) {
+      const normalizedSite = normalizeHost(site);
+
+      if (!normalizedSite || !Array.isArray(rawSelectors)) {
+        continue;
+      }
+
+      const selectors = [];
+      const selectorSeen = new Set();
+
+      for (const rawSelector of rawSelectors) {
+        const selector = normalizeManualHideSelector(rawSelector);
+
+        if (!selector || selectorSeen.has(selector)) {
+          continue;
+        }
+
+        selectorSeen.add(selector);
+        selectors.push(selector);
+
+        if (selectors.length >= MANUAL_MAX_HIDE_RULES_PER_SITE) {
+          break;
+        }
+      }
+
+      if (selectors.length > 0) {
+        normalized.hideRulesBySite[normalizedSite] = selectors;
+      }
+    }
+  }
+
+  return normalized;
+}
+
+async function getManualBlockState() {
+  if (!manualBlockStatePromise) {
+    manualBlockStatePromise = chrome.storage.local
+      .get([MANUAL_BLOCK_STORAGE_KEY])
+      .then((stored) => normalizeManualBlockState(stored[MANUAL_BLOCK_STORAGE_KEY]));
+  }
+
+  return manualBlockStatePromise;
+}
+
+async function persistManualBlockState() {
+  const state = await getManualBlockState();
+  await chrome.storage.local.set({
+    [MANUAL_BLOCK_STORAGE_KEY]: state
+  });
+}
+
+function scheduleManualBlockPersist() {
+  if (manualBlockFlushTimer) {
     return;
   }
 
-  if (!shouldPromoteCandidate(candidate)) {
+  manualBlockFlushTimer = setTimeout(() => {
+    manualBlockFlushTimer = null;
+
+    persistManualBlockState().catch((error) => {
+      console.error("Failed to persist manual block state", error);
+    });
+  }, MANUAL_BLOCK_FLUSH_DELAY_MS);
+}
+
+function createManualHostRule(ruleId, host) {
+  return {
+    id: ruleId,
+    priority: 1,
+    action: {
+      type: "block"
+    },
+    condition: {
+      urlFilter: `||${host}^`,
+      domainType: "thirdParty",
+      resourceTypes: MANUAL_BLOCK_RESOURCE_TYPES
+    }
+  };
+}
+
+function getNextManualRuleId(state) {
+  let candidate = Math.max(toNonNegativeInteger(state.nextRuleId, MANUAL_RULE_ID_START), MANUAL_RULE_ID_START);
+
+  const usedRuleIds = new Set(
+    Object.values(state.hostRules)
+      .map((entry) => toNonNegativeInteger(entry?.ruleId, 0))
+      .filter((ruleId) => ruleId >= MANUAL_RULE_ID_START && ruleId <= MANUAL_RULE_ID_END)
+  );
+
+  while (usedRuleIds.has(candidate) && candidate <= MANUAL_RULE_ID_END) {
+    candidate += 1;
+  }
+
+  if (candidate > MANUAL_RULE_ID_END) {
+    return null;
+  }
+
+  return candidate;
+}
+
+async function ensureManualHostBlocked(host, sourcePageUrl = "") {
+  const normalizedHost = normalizeHost(host);
+
+  if (!normalizedHost || isHostInSet(normalizedHost, adaptiveAllowlistHosts)) {
+    return {
+      added: false,
+      exists: false,
+      skipped: true,
+      reason: "allowlisted"
+    };
+  }
+
+  const state = await getManualBlockState();
+
+  if (Object.hasOwn(state.hostRules, normalizedHost)) {
+    return {
+      added: false,
+      exists: true,
+      skipped: false,
+      reason: "already-blocked"
+    };
+  }
+
+  if (Object.keys(state.hostRules).length >= MANUAL_MAX_HOST_RULES) {
+    return {
+      added: false,
+      exists: false,
+      skipped: true,
+      reason: "host-rule-cap"
+    };
+  }
+
+  const ruleId = getNextManualRuleId(state);
+
+  if (!ruleId) {
+    return {
+      added: false,
+      exists: false,
+      skipped: true,
+      reason: "rule-id-cap"
+    };
+  }
+
+  try {
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      addRules: [createManualHostRule(ruleId, normalizedHost)],
+      removeRuleIds: []
+    });
+  } catch (error) {
+    console.warn("Manual host block rule add failed", normalizedHost, error);
+    return {
+      added: false,
+      exists: false,
+      skipped: true,
+      reason: "dnr-update-failed"
+    };
+  }
+
+  const sourcePage = parseHttpUrl(sourcePageUrl);
+
+  state.hostRules[normalizedHost] = {
+    ruleId,
+    addedAt: Date.now(),
+    sourcePageHost: normalizeHost(sourcePage?.hostname)
+  };
+
+  state.nextRuleId = ruleId + 1;
+  scheduleManualBlockPersist();
+
+  return {
+    added: true,
+    exists: false,
+    skipped: false,
+    reason: "added"
+  };
+}
+
+async function addManualHideRuleForPage(pageUrl, rawSelector) {
+  const page = parseHttpUrl(pageUrl);
+  const selector = normalizeManualHideSelector(rawSelector);
+
+  if (!page || !selector) {
+    return {
+      added: false,
+      exists: false
+    };
+  }
+
+  const siteKey = getSiteKey(page.hostname);
+
+  if (!siteKey || isHostInSet(siteKey, adaptiveAllowlistHosts)) {
+    return {
+      added: false,
+      exists: false
+    };
+  }
+
+  const state = await getManualBlockState();
+  const existing = Array.isArray(state.hideRulesBySite[siteKey])
+    ? state.hideRulesBySite[siteKey]
+    : [];
+
+  if (existing.includes(selector)) {
+    return {
+      added: false,
+      exists: true
+    };
+  }
+
+  const nextSelectors = [...existing, selector].slice(-MANUAL_MAX_HIDE_RULES_PER_SITE);
+  state.hideRulesBySite[siteKey] = nextSelectors;
+  scheduleManualBlockPersist();
+
+  return {
+    added: true,
+    exists: false
+  };
+}
+
+async function getManualHideRulesForPage(pageUrl) {
+  const page = parseHttpUrl(pageUrl);
+
+  if (!page) {
+    return [];
+  }
+
+  const state = await getManualBlockState();
+  const host = normalizeHost(page.hostname);
+  const siteKey = getSiteKey(host);
+  const selectors = new Set();
+
+  for (const key of [host, siteKey]) {
+    if (!key || !Array.isArray(state.hideRulesBySite[key])) {
+      continue;
+    }
+
+    for (const selector of state.hideRulesBySite[key]) {
+      const normalized = normalizeManualHideSelector(selector);
+
+      if (normalized) {
+        selectors.add(normalized);
+      }
+    }
+  }
+
+  return [...selectors];
+}
+
+async function hydrateManualStateFromDynamicRules() {
+  if (manualBlockingHydrated) {
     return;
+  }
+
+  const state = await getManualBlockState();
+  const dynamicRules = await chrome.declarativeNetRequest.getDynamicRules();
+
+  for (const rule of dynamicRules) {
+    if (rule.id < MANUAL_RULE_ID_START || rule.id > MANUAL_RULE_ID_END) {
+      continue;
+    }
+
+    state.nextRuleId = Math.max(state.nextRuleId, rule.id + 1);
+
+    const urlFilter = rule?.condition?.urlFilter;
+
+    if (typeof urlFilter !== "string" || !urlFilter.startsWith("||") || !urlFilter.endsWith("^")) {
+      continue;
+    }
+
+    const host = normalizeHost(urlFilter.slice(2, -1));
+
+    if (!host || Object.hasOwn(state.hostRules, host)) {
+      continue;
+    }
+
+    state.hostRules[host] = {
+      ruleId: rule.id,
+      addedAt: Date.now(),
+      sourcePageHost: ""
+    };
+  }
+
+  manualBlockingHydrated = true;
+  scheduleManualBlockPersist();
+}
+
+async function ensureAutoLearnHostPromoted(state, host, confidence, hitsAtPromotion) {
+  const normalizedHost = normalizeHost(host);
+
+  if (!normalizedHost || Object.hasOwn(state.promoted, normalizedHost)) {
+    return false;
   }
 
   if (Object.keys(state.promoted).length >= AUTO_LEARN_MAX_DYNAMIC_RULES) {
-    return;
+    return false;
   }
 
   const ruleId = Math.max(state.nextRuleId, AUTO_LEARN_RULE_ID_START);
 
+  if (ruleId >= MANUAL_RULE_ID_START) {
+    return false;
+  }
+
   try {
     await chrome.declarativeNetRequest.updateDynamicRules({
-      addRules: [createAutoLearnRule(ruleId, candidate.host)],
+      addRules: [createAutoLearnRule(ruleId, normalizedHost)],
       removeRuleIds: []
     });
   } catch (error) {
-    console.warn("Auto-learn promotion failed", candidate.host, error);
-    return;
+    console.warn("Auto-learn promotion failed", normalizedHost, error);
+    return false;
   }
 
-  state.promoted[candidate.host] = {
+  state.promoted[normalizedHost] = {
     ruleId,
     addedAt: Date.now(),
-    confidence: candidate.maxScore,
-    hitsAtPromotion: candidate.hits
+    confidence: toNonNegativeInteger(confidence, 0),
+    hitsAtPromotion: toNonNegativeInteger(hitsAtPromotion, 0)
   };
 
   state.nextRuleId = ruleId + 1;
-  delete state.candidates[candidate.host];
   scheduleAutoLearnPersist();
+  return true;
+}
+
+async function tryPromoteAutoLearnCandidate(state, candidate) {
+  if (!candidate || !shouldPromoteCandidate(candidate)) {
+    return;
+  }
+
+  const promoted = await ensureAutoLearnHostPromoted(
+    state,
+    candidate.host,
+    candidate.maxScore,
+    candidate.hits
+  );
+
+  if (promoted) {
+    delete state.candidates[candidate.host];
+    scheduleAutoLearnPersist();
+  }
 }
 
 async function processAutoLearnObservation({
@@ -891,6 +1358,17 @@ async function processAutoLearnObservation({
   const contextHost = normalizeHost(context.hostname);
 
   if (!candidateHost || !contextHost || !isThirdPartyHost(candidateHost, contextHost)) {
+    return;
+  }
+
+  if (isHostInSet(contextHost, adaptiveAllowlistHosts) || isHostInSet(candidateHost, adaptiveAllowlistHosts)) {
+    return;
+  }
+
+  if (isHostInSet(candidateHost, adaptiveDenylistHosts)) {
+    const state = await getAutoLearnState();
+
+    await ensureAutoLearnHostPromoted(state, candidateHost, 100, AUTO_LEARN_PROMOTE_HITS);
     return;
   }
 
@@ -967,7 +1445,7 @@ async function hydrateAutoLearnStateFromDynamicRules() {
   const dynamicRules = await chrome.declarativeNetRequest.getDynamicRules();
 
   for (const rule of dynamicRules) {
-    if (rule.id < AUTO_LEARN_RULE_ID_START) {
+    if (rule.id < AUTO_LEARN_RULE_ID_START || rule.id >= MANUAL_RULE_ID_START) {
       continue;
     }
 
@@ -1042,13 +1520,173 @@ async function initializeAutoLearning() {
   await hydrateAutoLearnStateFromDynamicRules();
 
   const settings = await getSettings();
+  updateAdaptiveHostSets(settings);
   autoLearningEnabled = Boolean(settings.blockAutoLearningEnabled);
   setAutoLearnWebRequestListener(autoLearningEnabled);
 }
 
+async function initializeManualBlocking() {
+  await hydrateManualStateFromDynamicRules();
+  await ensureContextMenuRegistration();
+}
+
+async function ensureContextMenuRegistration() {
+  const contextMenusApi = chrome.contextMenus;
+
+  if (!contextMenusApi || typeof contextMenusApi.removeAll !== "function") {
+    return;
+  }
+
+  await new Promise((resolve) => {
+    contextMenusApi.removeAll(() => {
+      resolve();
+    });
+  });
+
+  await new Promise((resolve) => {
+    contextMenusApi.create(
+      {
+        id: CONTEXT_MENU_BLOCK_CONTENT_ID,
+        title: "Block this content",
+        contexts: ["all"]
+      },
+      () => {
+        if (chrome.runtime.lastError) {
+          console.warn("Context menu creation failed", chrome.runtime.lastError.message);
+        }
+
+        resolve();
+      }
+    );
+  });
+}
+
+async function tryReadLastContextTarget(tabId) {
+  if (!Number.isInteger(tabId) || typeof chrome.tabs?.sendMessage !== "function") {
+    return null;
+  }
+
+  try {
+    const response = await chrome.tabs.sendMessage(tabId, {
+      type: "GET_LAST_CONTEXT_TARGET"
+    });
+
+    if (!response || typeof response !== "object") {
+      return null;
+    }
+
+    return response;
+  } catch {
+    return null;
+  }
+}
+
+function buildContextCandidateUrlList(info, contextTarget) {
+  const next = new Set();
+
+  for (const rawUrl of [
+    info?.srcUrl,
+    info?.frameUrl,
+    info?.linkUrl,
+    ...(Array.isArray(contextTarget?.urls) ? contextTarget.urls : [])
+  ]) {
+    if (typeof rawUrl !== "string" || !rawUrl) {
+      continue;
+    }
+
+    next.add(rawUrl);
+  }
+
+  return [...next];
+}
+
+async function notifyManualHideRulesUpdated(tabId, pageUrl) {
+  if (!Number.isInteger(tabId) || typeof chrome.tabs?.sendMessage !== "function") {
+    return;
+  }
+
+  try {
+    await chrome.tabs.sendMessage(tabId, {
+      type: "MANUAL_HIDE_RULES_UPDATED",
+      pageUrl
+    });
+  } catch {
+    // Ignore tabs without an active content script context.
+  }
+}
+
+async function handleContextMenuBlockContentClick(info, tab) {
+  const tabId = Number.isInteger(tab?.id) ? tab.id : null;
+  const contextTarget = tabId === null ? null : await tryReadLastContextTarget(tabId);
+
+  const pageUrl =
+    (typeof info?.pageUrl === "string" && info.pageUrl) ||
+    (typeof contextTarget?.pageUrl === "string" && contextTarget.pageUrl) ||
+    (typeof tab?.url === "string" ? tab.url : "");
+
+  const contextPage = parseHttpUrl(pageUrl);
+  const contextHost = normalizeHost(contextPage?.hostname);
+  const candidateUrls = buildContextCandidateUrlList(info, contextTarget);
+
+  let manualHostsAdded = 0;
+  let manualHostsExisting = 0;
+
+  for (const rawCandidateUrl of candidateUrls) {
+    const candidate = parseHttpUrl(rawCandidateUrl, pageUrl || undefined);
+
+    if (!candidate) {
+      continue;
+    }
+
+    const candidateHost = normalizeHost(candidate.hostname);
+
+    if (!candidateHost || candidateHost === contextHost) {
+      continue;
+    }
+
+    const outcome = await ensureManualHostBlocked(candidateHost, pageUrl);
+
+    if (outcome.added) {
+      manualHostsAdded += 1;
+    } else if (outcome.exists) {
+      manualHostsExisting += 1;
+    }
+  }
+
+  let hideRuleAdded = false;
+  const selector = normalizeManualHideSelector(contextTarget?.selector || "");
+
+  if (selector && pageUrl) {
+    const hideOutcome = await addManualHideRuleForPage(pageUrl, selector);
+    hideRuleAdded = hideOutcome.added || hideOutcome.exists;
+
+    if (hideRuleAdded && tabId !== null) {
+      await notifyManualHideRulesUpdated(tabId, pageUrl);
+    }
+  }
+
+  const blockedAny = manualHostsAdded > 0 || manualHostsExisting > 0 || hideRuleAdded;
+
+  if (!blockedAny) {
+    console.info("Manual block skipped: no safe target extracted", {
+      pageUrl,
+      contextUrlCount: candidateUrls.length
+    });
+    return;
+  }
+
+  console.info("Manual block applied", {
+    pageUrl,
+    manualHostsAdded,
+    manualHostsExisting,
+    hideRuleApplied: hideRuleAdded
+  });
+}
+
 async function getAutoLearningSummary() {
-  const state = await getAutoLearnState();
+  const [state, manualState] = await Promise.all([getAutoLearnState(), getManualBlockState()]);
   const candidates = Object.values(state.candidates);
+  const promotedEntries = Object.entries(state.promoted);
 
   let promotionReady = 0;
 
@@ -1058,11 +1696,65 @@ async function getAutoLearningSummary() {
     }
   }
 
+  const topCandidates = candidates
+    .slice()
+    .sort((entryA, entryB) => {
+      if (entryA.maxScore !== entryB.maxScore) {
+        return entryB.maxScore - entryA.maxScore;
+      }
+
+      if (entryA.hits !== entryB.hits) {
+        return entryB.hits - entryA.hits;
+      }
+
+      return entryB.lastSeen - entryA.lastSeen;
+    })
+    .slice(0, 8)
+    .map((entry) => ({
+      host: entry.host,
+      hits: entry.hits,
+      maxScore: entry.maxScore,
+      lastSeen: entry.lastSeen,
+      siteCount: entry.siteKeys.length
+    }));
+
+  const topPromotedHosts = promotedEntries
+    .map(([host, value]) => ({
+      host,
+      ruleId: value.ruleId,
+      confidence: value.confidence,
+      addedAt: value.addedAt,
+      hitsAtPromotion: value.hitsAtPromotion
+    }))
+    .sort((entryA, entryB) => entryB.addedAt - entryA.addedAt)
+    .slice(0, 8);
+
+  const manualHostEntries = Object.entries(manualState.hostRules)
+    .map(([host, value]) => ({
+      host,
+      ruleId: value.ruleId,
+      addedAt: value.addedAt,
+      sourcePageHost: value.sourcePageHost || ""
+    }))
+    .sort((entryA, entryB) => entryB.addedAt - entryA.addedAt);
+
+  const manualHideSelectors = Object.values(manualState.hideRulesBySite).reduce(
+    (sum, selectors) => sum + selectors.length,
+    0
+  );
+
   return {
     enabled: autoLearningEnabled,
     trackedCandidates: candidates.length,
-    promotedRules: Object.keys(state.promoted).length,
-    promotionReady
+    promotedRules: promotedEntries.length,
+    promotionReady,
+    allowlistHosts: [...adaptiveAllowlistHosts],
+    denylistHosts: [...adaptiveDenylistHosts],
+    manualBlockedHosts: manualHostEntries.length,
+    manualHideSelectors,
+    topCandidates,
+    topPromotedHosts,
+    recentManualHosts: manualHostEntries.slice(0, 8)
   };
 }
 
@@ -1150,6 +1842,7 @@ async function syncBlockingState() {
       settings.blockRedirectPopupsEnabled
   );
 
+  updateAdaptiveHostSets(settings);
   autoLearningEnabled = Boolean(settings.blockAutoLearningEnabled);
 
   await updateRulesetState(settings);
@@ -1161,6 +1854,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   await migrateLegacySettings();
   await initializeDiagnostics();
   await initializeAutoLearning();
+  await initializeManualBlocking();
 
   const stored = await chrome.storage.sync.get(Object.keys(DEFAULT_SETTINGS));
   const missingDefaults = {};
@@ -1182,6 +1876,7 @@ chrome.runtime.onStartup.addListener(async () => {
   await migrateLegacySettings();
   await initializeDiagnostics();
   await initializeAutoLearning();
+  await initializeManualBlocking();
   await syncBlockingState();
 });
 
@@ -1223,6 +1918,25 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       queued
     });
     return;
+  }
+
+  if (message.type === "GET_MANUAL_HIDE_RULES_FOR_PAGE") {
+    (async () => {
+      const pageUrl = typeof message.pageUrl === "string" ? message.pageUrl : "";
+      const selectors = await getManualHideRulesForPage(pageUrl);
+
+      sendResponse({
+        ok: true,
+        selectors
+      });
+    })().catch((error) => {
+      sendResponse({
+        ok: false,
+        error: toMessageError(error)
+      });
+    });
+
+    return true;
   }
 
   if (message.type === "GET_AUTO_LEARNING_SUMMARY") {
@@ -1290,13 +2004,26 @@ chrome.storage.onChanged.addListener(async (changes, areaName) => {
   );
 
   const hasAutoLearningSettingChange = changedKeys.includes("blockAutoLearningEnabled");
+  const hasAdaptiveHostListChange =
+    changedKeys.includes("adaptiveAllowlistHosts") ||
+    changedKeys.includes("adaptiveDenylistHosts");
 
-  if (!hasRuleOrLegacyChange && !hasAutoLearningSettingChange) {
+  if (!hasRuleOrLegacyChange && !hasAutoLearningSettingChange && !hasAdaptiveHostListChange) {
     return;
   }
 
   await migrateLegacySettings();
   await syncBlockingState();
+});
+
+chrome.contextMenus?.onClicked?.addListener((info, tab) => {
+  if (info.menuItemId !== CONTEXT_MENU_BLOCK_CONTENT_ID) {
+    return;
+  }
+
+  handleContextMenuBlockContentClick(info, tab).catch((error) => {
+    console.warn("Manual context-menu block failed", error);
+  });
 });
 
 initializeDiagnostics().catch((error) => {
@@ -1305,4 +2032,8 @@ initializeDiagnostics().catch((error) => {
 
 initializeAutoLearning().catch((error) => {
   console.warn("Auto-learning initialization failed", error);
+});
+
+initializeManualBlocking().catch((error) => {
+  console.warn("Manual blocking initialization failed", error);
 });

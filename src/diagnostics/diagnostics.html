@@ -18,13 +18,13 @@
             height="62"
           />
           <div class="hero-copy">
-            <p class="eyebrow">Runtime Analytics</p>
+            <p class="eyebrow">Runtime Status</p>
             <h1>Diagnostics</h1>
-            <p>Audit blocker health, matched-rule flow, and per-ruleset impact in one premium control surface.</p>
+            <p>Inspect ruleset health, adaptive learning state, and blocked-request activity.</p>
             <ul class="diag-tags" aria-label="Diagnostics features">
               <li>Ruleset Health</li>
               <li>Live Counters</li>
-              <li>24h Match Window</li>
+              <li>Adaptive State</li>
             </ul>
           </div>
         </div>
@@ -49,6 +49,30 @@
           <h2>Listener Status</h2>
           <p id="listenerStatusValue" class="value">-</p>
         </article>
+      </section>
+
+      <section class="card">
+        <h2>Adaptive Engine</h2>
+        <div class="adaptive-grid">
+          <article>
+            <h3>Tracked Candidates</h3>
+            <p id="adaptiveTrackedValue" class="value">-</p>
+          </article>
+          <article>
+            <h3>Promoted Rules</h3>
+            <p id="adaptivePromotedValue" class="value">-</p>
+          </article>
+          <article>
+            <h3>Ready to Promote</h3>
+            <p id="adaptiveReadyValue" class="value">-</p>
+          </article>
+          <article>
+            <h3>Manual Host Blocks</h3>
+            <p id="adaptiveManualValue" class="value">-</p>
+          </article>
+        </div>
+        <p id="adaptiveSummary" class="muted">Loading adaptive summary...</p>
+        <ul id="adaptiveHostList" class="list"></ul>
       </section>
 
       <section class="signal-grid" aria-label="Health summary">

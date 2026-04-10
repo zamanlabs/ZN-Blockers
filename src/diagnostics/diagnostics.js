@@ -3,6 +3,12 @@ const REFRESH_INTERVAL_MS = 6000;
 const totalBlockedValue = document.getElementById("totalBlockedValue");
 const lastUpdatedValue = document.getElementById("lastUpdatedValue");
 const listenerStatusValue = document.getElementById("listenerStatusValue");
+const adaptiveTrackedValue = document.getElementById("adaptiveTrackedValue");
+const adaptivePromotedValue = document.getElementById("adaptivePromotedValue");
+const adaptiveReadyValue = document.getElementById("adaptiveReadyValue");
+const adaptiveManualValue = document.getElementById("adaptiveManualValue");
+const adaptiveSummary = document.getElementById("adaptiveSummary");
+const adaptiveHostList = document.getElementById("adaptiveHostList");
 const rulesetTableBody = document.getElementById("rulesetTableBody");
 const recentSummary = document.getElementById("recentSummary");
 const recentRulesetList = document.getElementById("recentRulesetList");
@@ -116,6 +122,66 @@ function renderRecentRules(snapshot) {
   }
 }
 
+function renderAdaptive(snapshot) {
+  const adaptive = snapshot.autoLearning || {};
+
+  adaptiveTrackedValue.textContent = formatNumber(adaptive.trackedCandidates);
+  adaptivePromotedValue.textContent = formatNumber(adaptive.promotedRules);
+  adaptiveReadyValue.textContent = formatNumber(adaptive.promotionReady);
+  adaptiveManualValue.textContent = formatNumber(adaptive.manualBlockedHosts);
+
+  const allowCount = Array.isArray(adaptive.allowlistHosts)
+    ? adaptive.allowlistHosts.length
+    : 0;
+  const denyCount = Array.isArray(adaptive.denylistHosts)
+    ? adaptive.denylistHosts.length
+    : 0;
+
+  adaptiveSummary.textContent = `Allow list: ${formatNumber(allowCount)} | Deny list: ${formatNumber(
+    denyCount
+  )} | Manual hide selectors: ${formatNumber(adaptive.manualHideSelectors)}`;
+
+  adaptiveHostList.innerHTML = "";
+  const rows = [];
+
+  if (Array.isArray(adaptive.topCandidates)) {
+    for (const candidate of adaptive.topCandidates.slice(0, 4)) {
+      rows.push(
+        `Candidate ${candidate.host} | score ${formatNumber(candidate.maxScore)} | hits ${formatNumber(candidate.hits)}`
+      );
+    }
+  }
+
+  if (Array.isArray(adaptive.topPromotedHosts)) {
+    for (const promoted of adaptive.topPromotedHosts.slice(0, 4)) {
+      rows.push(
+        `Promoted ${promoted.host} | confidence ${formatNumber(promoted.confidence)} | hits ${formatNumber(
+          promoted.hitsAtPromotion
+        )}`
+      );
+    }
+  }
+
+  if (Array.isArray(adaptive.recentManualHosts)) {
+    for (const manualHost of adaptive.recentManualHosts.slice(0, 4)) {
+      rows.push(`Manual block ${manualHost.host}`);
+    }
+  }
+
+  if (rows.length === 0) {
+    const emptyItem = document.createElement("li");
+    emptyItem.textContent = "No adaptive host activity yet.";
+    adaptiveHostList.appendChild(emptyItem);
+    return;
+  }
+
+  for (const rowText of rows) {
+    const row = document.createElement("li");
+    row.textContent = rowText;
+    adaptiveHostList.appendChild(row);
+  }
+}
+
 function renderSnapshot(snapshot) {
   totalBlockedValue.textContent = formatNumber(snapshot.totals.totalBlockedRequests);
   lastUpdatedValue.textContent = formatTimestamp(snapshot.totals.updatedAt);
@@ -128,6 +194,7 @@ function renderSnapshot(snapshot) {
 
   renderRulesetTable(snapshot);
   renderRecentRules(snapshot);
+  renderAdaptive(snapshot);
 }
 
 async function requestSnapshot(messageType) {

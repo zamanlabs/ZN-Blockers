@@ -205,6 +205,27 @@ button:disabled {
   font-weight: 700;
 }
 
+.adaptive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.adaptive-grid article {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.84);
+  padding: 10px 11px;
+}
+
+.adaptive-grid h3 {
+  margin: 0;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
 .signal-grid {
   margin-bottom: 12px;
   display: grid;
