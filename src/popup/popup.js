@@ -1,6 +1,7 @@
 const DEFAULT_SETTINGS = Object.freeze({
   blockYoutubeNetworkEnabled: true,
   youtubePlaybackCompatibilityEnabled: true,
+  youtubePreplayCompatibilityEnabled: false,
   blockFacebookShieldEnabled: true,
   blockGlobalTrackersEnabled: true,
   blockGlobalAdsEnabled: true,
@@ -16,6 +17,7 @@ const DEFAULT_SETTINGS = Object.freeze({
 const BOOLEAN_SETTING_KEYS = Object.freeze([
   "blockYoutubeNetworkEnabled",
   "youtubePlaybackCompatibilityEnabled",
+  "youtubePreplayCompatibilityEnabled",
   "blockFacebookShieldEnabled",
   "blockGlobalTrackersEnabled",
   "blockGlobalAdsEnabled",
@@ -51,6 +53,11 @@ const FEATURE_TOGGLE_CONFIG = Object.freeze([
     id: "youtubePlaybackCompatibilityToggle",
     key: "youtubePlaybackCompatibilityEnabled",
     label: "YouTube playback compatibility"
+  },
+  {
+    id: "youtubePreplayCompatibilityToggle",
+    key: "youtubePreplayCompatibilityEnabled",
+    label: "YouTube pre-play compatibility"
   },
   {
     id: "facebookShieldToggle",

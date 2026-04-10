@@ -8,7 +8,8 @@ globalThis.__znBlockerYoutubeCleanupLoaded = true;
 const DEFAULT_SETTINGS = Object.freeze({
   cleanupUiAdsEnabled: true,
   blockYoutubeNetworkEnabled: true,
-  youtubePlaybackCompatibilityEnabled: true
+  youtubePlaybackCompatibilityEnabled: true,
+  youtubePreplayCompatibilityEnabled: false
 });
 
 const AD_RENDERER_SELECTORS = [
@@ -150,24 +151,23 @@ const SPONSORED_SECTION_TITLE_SELECTORS = [
 
 const YOUTUBE_PLAYBACK_PROMPT_SELECTORS = [
   "ytd-enforcement-message-view-model",
-  "tp-yt-paper-dialog",
-  "yt-confirm-dialog-renderer",
+  "yt-playability-error-supported-renderers",
   "ytd-popup-container",
-  "ytd-alert-with-button-renderer",
-  "ytd-watch-flexy",
-  "yt-playability-error-supported-renderers"
+  "tp-yt-paper-dialog",
+  "ytd-alert-with-button-renderer"
 ].join(",");
 
 const YOUTUBE_PLAYBACK_PROMPT_PHRASES = [
   "ad blockers violate youtube",
-  "video playback is blocked unless youtube is allowlisted",
+  "video playback is blocked unless youtube",
   "allow youtube ads",
-  "not using an ad blocker",
-  "youtube terms of service"
+  "youtube terms of service",
+  "not using an ad blocker"
 ];
 
 const COMPATIBILITY_RELOAD_SESSION_KEY = "__znBlockerYoutubeCompatReloadOnce";
 const COMPATIBILITY_NOTICE_ID = "zn-blocker-youtube-compat-notice";
+const WATCH_PATH_REGEX = /^\/(watch|shorts|live)(?:\b|\/|$)/i;
 const COMPATIBILITY_SETTING_PATCH = Object.freeze({
   blockYoutubeNetworkEnabled: false,
   cleanupUiAdsEnabled: false
@@ -178,6 +178,7 @@ let observer = null;
 let cleanupQueued = false;
 let youtubeNetworkShieldEnabled = true;
 let playbackCompatibilityEnabled = true;
+let preplayCompatibilityEnabled = false;
 let compatibilitySwitchInProgress = false;
 let compatibilityNoticeTimer = null;
 
@@ -208,12 +209,12 @@ function showCompatibilityNotice(message, isError = false) {
     notice = document.createElement("div");
     notice.id = COMPATIBILITY_NOTICE_ID;
     notice.style.cssText =
-      "position:fixed;right:12px;bottom:12px;z-index:2147483647;max-width:320px;padding:10px 12px;border-radius:10px;font:600 12px/1.4 sans-serif;color:#fff;box-shadow:0 10px 20px rgba(0,0,0,.35);";
+      "position:fixed;right:14px;bottom:14px;z-index:2147483647;max-width:340px;padding:10px 12px;border-radius:10px;font:600 12px/1.4 sans-serif;color:#fff;box-shadow:0 10px 22px rgba(0,0,0,.35);";
     document.documentElement.appendChild(notice);
   }
 
   notice.textContent = message;
-  notice.style.background = isError ? "rgba(153, 27, 27, 0.9)" : "rgba(3, 104, 71, 0.92)";
+  notice.style.background = isError ? "rgba(153, 27, 27, 0.93)" : "rgba(3, 104, 71, 0.93)";
 
   if (compatibilityNoticeTimer) {
     clearTimeout(compatibilityNoticeTimer);
@@ -230,6 +231,10 @@ function normalizeText(value) {
     .toLowerCase()
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function isWatchPlaybackPage() {
+  return WATCH_PATH_REGEX.test(window.location.pathname || "");
 }
 
 function isSponsoredText(value) {
@@ -389,11 +394,7 @@ function findYoutubePlaybackPrompt(root = document) {
   return null;
 }
 
-function shouldObserveDom() {
-  return cleanupEnabled || (playbackCompatibilityEnabled && youtubeNetworkShieldEnabled);
-}
-
-async function enableYoutubePlaybackCompatibility() {
+async function enableYoutubePlaybackCompatibility(trigger) {
   if (
     compatibilitySwitchInProgress ||
     !playbackCompatibilityEnabled ||
@@ -410,7 +411,8 @@ async function enableYoutubePlaybackCompatibility() {
     cleanupEnabled = false;
     youtubeNetworkShieldEnabled = false;
 
-    showCompatibilityNotice("YouTube playback compatibility enabled. Reloading...");
+    const reasonText = trigger === "preplay" ? "before playback" : "after warning detection";
+    showCompatibilityNotice(`YouTube compatibility enabled ${reasonText}. Reloading...`);
 
     if (!sessionStorage.getItem(COMPATIBILITY_RELOAD_SESSION_KEY)) {
       sessionStorage.setItem(COMPATIBILITY_RELOAD_SESSION_KEY, "1");
@@ -420,10 +422,25 @@ async function enableYoutubePlaybackCompatibility() {
     }
   } catch (error) {
     console.warn("YouTube compatibility switch failed", error);
-    showCompatibilityNotice("Unable to enable YouTube playback compatibility.", true);
+    showCompatibilityNotice("Unable to enable YouTube compatibility mode.", true);
   } finally {
     compatibilitySwitchInProgress = false;
   }
+}
+
+function maybeEnablePreplayCompatibility() {
+  if (
+    !preplayCompatibilityEnabled ||
+    !playbackCompatibilityEnabled ||
+    !youtubeNetworkShieldEnabled ||
+    !isWatchPlaybackPage()
+  ) {
+    return;
+  }
+
+  enableYoutubePlaybackCompatibility("preplay").catch((error) => {
+    console.warn("YouTube pre-play compatibility failed", error);
+  });
 }
 
 function maybeHandleYoutubePlaybackPrompt(root = document) {
@@ -438,9 +455,13 @@ function maybeHandleYoutubePlaybackPrompt(root = document) {
   }
 
   prompt.setAttribute("data-zn-youtube-playback-warning", "detected");
-  enableYoutubePlaybackCompatibility().catch((error) => {
-    console.warn("YouTube compatibility handling failed", error);
+  enableYoutubePlaybackCompatibility("prompt").catch((error) => {
+    console.warn("YouTube playback warning handler failed", error);
   });
+}
+
+function shouldObserveDom() {
+  return cleanupEnabled || (playbackCompatibilityEnabled && youtubeNetworkShieldEnabled);
 }
 
 function runCleanup(root = document) {
@@ -515,18 +536,21 @@ function applyRuntimeSettings(settings) {
   cleanupEnabled = Boolean(settings.cleanupUiAdsEnabled);
   youtubeNetworkShieldEnabled = Boolean(settings.blockYoutubeNetworkEnabled);
   playbackCompatibilityEnabled = Boolean(settings.youtubePlaybackCompatibilityEnabled);
+  preplayCompatibilityEnabled = Boolean(settings.youtubePreplayCompatibilityEnabled);
 
   if (cleanupEnabled) {
     runCleanup(document);
+  } else {
+    maybeHandleYoutubePlaybackPrompt(document);
   }
 
   if (shouldObserveDom()) {
     startObserver();
-    maybeHandleYoutubePlaybackPrompt(document);
-    return;
+  } else {
+    stopObserver();
   }
 
-  stopObserver();
+  maybeEnablePreplayCompatibility();
 }
 
 chrome.storage.sync.get(DEFAULT_SETTINGS, (settings) => {
@@ -534,7 +558,7 @@ chrome.storage.sync.get(DEFAULT_SETTINGS, (settings) => {
 
   if (sessionStorage.getItem(COMPATIBILITY_RELOAD_SESSION_KEY)) {
     sessionStorage.removeItem(COMPATIBILITY_RELOAD_SESSION_KEY);
-    showCompatibilityNotice("YouTube playback compatibility is active.");
+    showCompatibilityNotice("YouTube compatibility mode is active.");
   }
 });
 
@@ -543,7 +567,8 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
     areaName !== "sync" ||
     (!changes.cleanupUiAdsEnabled &&
       !changes.blockYoutubeNetworkEnabled &&
-      !changes.youtubePlaybackCompatibilityEnabled)
+      !changes.youtubePlaybackCompatibilityEnabled &&
+      !changes.youtubePreplayCompatibilityEnabled)
   ) {
     return;
   }
