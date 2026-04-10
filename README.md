@@ -7,7 +7,7 @@
 ZN blocker is a Manifest V3 extension for Chromium browsers that aggressively suppresses ads, sponsored content, tracking scripts, and OEM telemetry endpoints while keeping the UI simple for daily use.
 
 <p align="left">
-    <img src="https://img.shields.io/badge/version-1.1.2-22c55e" alt="Version 1.1.2" />
+    <img src="https://img.shields.io/badge/version-1.1.3-22c55e" alt="Version 1.1.3" />
     <img src="https://img.shields.io/badge/manifest-MV3-0ea5e9" alt="Manifest V3" />
     <img src="https://img.shields.io/badge/platform-Chromium-1f2937" alt="Chromium" />
     <img src="https://img.shields.io/badge/license-Non--Commercial-f59e0b" alt="License" />
@@ -17,7 +17,7 @@ ZN blocker is a Manifest V3 extension for Chromium browsers that aggressively su
 
 | Item | Value |
 | --- | --- |
-| Current extension version | **1.1.2** |
+| Current extension version | **1.1.3** |
 | Last docs refresh | **2026-04-10** |
 | Rules architecture | Static DNR + Dynamic adaptive learning |
 | Browser target | Chrome, Edge, and MV3-compatible Chromium browsers |
@@ -97,7 +97,7 @@ Release packaging script: `scripts/package-release.ps1`.
 - Contribution guide: [CONTRIBUTING.md](CONTRIBUTING.md)
 - Security policy: [SECURITY.md](SECURITY.md)
 - Code of conduct: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
-- Release notes: [RELEASE_NOTES_v0.1.0.md](RELEASE_NOTES_v0.1.0.md)
+- Release notes: [RELEASE_NOTES_v1.1.3.md](RELEASE_NOTES_v1.1.3.md)
 
 ## Project Boundary
 
