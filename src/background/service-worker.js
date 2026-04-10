@@ -1,5 +1,6 @@
 const DEFAULT_SETTINGS = Object.freeze({
   blockYoutubeNetworkEnabled: true,
+  youtubePlaybackCompatibilityEnabled: true,
   blockFacebookShieldEnabled: true,
   blockGlobalTrackersEnabled: true,
   blockGlobalAdsEnabled: true,

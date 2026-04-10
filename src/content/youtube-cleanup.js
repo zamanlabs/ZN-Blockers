@@ -6,7 +6,9 @@ if (globalThis.__znBlockerYoutubeCleanupLoaded) {
 globalThis.__znBlockerYoutubeCleanupLoaded = true;
 
 const DEFAULT_SETTINGS = Object.freeze({
-  cleanupUiAdsEnabled: true
+  cleanupUiAdsEnabled: true,
+  blockYoutubeNetworkEnabled: true,
+  youtubePlaybackCompatibilityEnabled: true
 });
 
 const AD_RENDERER_SELECTORS = [
@@ -146,9 +148,38 @@ const SPONSORED_SECTION_TITLE_SELECTORS = [
   "ytm-item-section-renderer .title"
 ].join(",");
 
+const YOUTUBE_PLAYBACK_PROMPT_SELECTORS = [
+  "ytd-enforcement-message-view-model",
+  "tp-yt-paper-dialog",
+  "yt-confirm-dialog-renderer",
+  "ytd-popup-container",
+  "ytd-alert-with-button-renderer",
+  "ytd-watch-flexy",
+  "yt-playability-error-supported-renderers"
+].join(",");
+
+const YOUTUBE_PLAYBACK_PROMPT_PHRASES = [
+  "ad blockers violate youtube",
+  "video playback is blocked unless youtube is allowlisted",
+  "allow youtube ads",
+  "not using an ad blocker",
+  "youtube terms of service"
+];
+
+const COMPATIBILITY_RELOAD_SESSION_KEY = "__znBlockerYoutubeCompatReloadOnce";
+const COMPATIBILITY_NOTICE_ID = "zn-blocker-youtube-compat-notice";
+const COMPATIBILITY_SETTING_PATCH = Object.freeze({
+  blockYoutubeNetworkEnabled: false,
+  cleanupUiAdsEnabled: false
+});
+
 let cleanupEnabled = true;
 let observer = null;
 let cleanupQueued = false;
+let youtubeNetworkShieldEnabled = true;
+let playbackCompatibilityEnabled = true;
+let compatibilitySwitchInProgress = false;
+let compatibilityNoticeTimer = null;
 
 function queryAllIncludingRoot(root, selector) {
   const results = [];
@@ -168,6 +199,30 @@ function queryAllIncludingRoot(root, selector) {
 function hideElement(element) {
   element.style.setProperty("display", "none", "important");
   element.setAttribute("data-zn-blocker-hidden", "true");
+}
+
+function showCompatibilityNotice(message, isError = false) {
+  let notice = document.getElementById(COMPATIBILITY_NOTICE_ID);
+
+  if (!notice) {
+    notice = document.createElement("div");
+    notice.id = COMPATIBILITY_NOTICE_ID;
+    notice.style.cssText =
+      "position:fixed;right:12px;bottom:12px;z-index:2147483647;max-width:320px;padding:10px 12px;border-radius:10px;font:600 12px/1.4 sans-serif;color:#fff;box-shadow:0 10px 20px rgba(0,0,0,.35);";
+    document.documentElement.appendChild(notice);
+  }
+
+  notice.textContent = message;
+  notice.style.background = isError ? "rgba(153, 27, 27, 0.9)" : "rgba(3, 104, 71, 0.92)";
+
+  if (compatibilityNoticeTimer) {
+    clearTimeout(compatibilityNoticeTimer);
+  }
+
+  compatibilityNoticeTimer = setTimeout(() => {
+    notice.remove();
+    compatibilityNoticeTimer = null;
+  }, 2800);
 }
 
 function normalizeText(value) {
@@ -308,6 +363,86 @@ function hideSponsoredSections(root = document) {
   }
 }
 
+function isYoutubePlaybackPrompt(element) {
+  if (!(element instanceof Element)) {
+    return false;
+  }
+
+  const text = normalizeText(element.textContent || "");
+
+  if (!text || !text.includes("youtube")) {
+    return false;
+  }
+
+  return YOUTUBE_PLAYBACK_PROMPT_PHRASES.some((phrase) => text.includes(phrase));
+}
+
+function findYoutubePlaybackPrompt(root = document) {
+  const candidates = queryAllIncludingRoot(root, YOUTUBE_PLAYBACK_PROMPT_SELECTORS);
+
+  for (const candidate of candidates) {
+    if (isYoutubePlaybackPrompt(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+function shouldObserveDom() {
+  return cleanupEnabled || (playbackCompatibilityEnabled && youtubeNetworkShieldEnabled);
+}
+
+async function enableYoutubePlaybackCompatibility() {
+  if (
+    compatibilitySwitchInProgress ||
+    !playbackCompatibilityEnabled ||
+    !youtubeNetworkShieldEnabled
+  ) {
+    return;
+  }
+
+  compatibilitySwitchInProgress = true;
+
+  try {
+    await chrome.storage.sync.set(COMPATIBILITY_SETTING_PATCH);
+
+    cleanupEnabled = false;
+    youtubeNetworkShieldEnabled = false;
+
+    showCompatibilityNotice("YouTube playback compatibility enabled. Reloading...");
+
+    if (!sessionStorage.getItem(COMPATIBILITY_RELOAD_SESSION_KEY)) {
+      sessionStorage.setItem(COMPATIBILITY_RELOAD_SESSION_KEY, "1");
+      setTimeout(() => {
+        window.location.reload();
+      }, 420);
+    }
+  } catch (error) {
+    console.warn("YouTube compatibility switch failed", error);
+    showCompatibilityNotice("Unable to enable YouTube playback compatibility.", true);
+  } finally {
+    compatibilitySwitchInProgress = false;
+  }
+}
+
+function maybeHandleYoutubePlaybackPrompt(root = document) {
+  if (!playbackCompatibilityEnabled || !youtubeNetworkShieldEnabled) {
+    return;
+  }
+
+  const prompt = findYoutubePlaybackPrompt(root);
+
+  if (!prompt) {
+    return;
+  }
+
+  prompt.setAttribute("data-zn-youtube-playback-warning", "detected");
+  enableYoutubePlaybackCompatibility().catch((error) => {
+    console.warn("YouTube compatibility handling failed", error);
+  });
+}
+
 function runCleanup(root = document) {
   hideAdRenderers(root);
   hideAdCenterPanels(root);
@@ -317,6 +452,7 @@ function runCleanup(root = document) {
   hideCardsWithAdLinks(root);
   hideMyAdCenterAds(root);
   hideSponsoredSections(root);
+  maybeHandleYoutubePlaybackPrompt(root);
 }
 
 function queueCleanup() {
@@ -338,21 +474,26 @@ function startObserver() {
   }
 
   observer = new MutationObserver((mutations) => {
-    if (!cleanupEnabled) {
-      return;
-    }
-
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
         if (!(node instanceof Element)) {
           continue;
         }
 
-        runCleanup(node);
+        maybeHandleYoutubePlaybackPrompt(node);
+
+        if (cleanupEnabled) {
+          runCleanup(node);
+        }
       }
     }
 
-    queueCleanup();
+    if (cleanupEnabled) {
+      queueCleanup();
+      return;
+    }
+
+    maybeHandleYoutubePlaybackPrompt(document);
   });
 
   observer.observe(document.documentElement, {
@@ -370,12 +511,18 @@ function stopObserver() {
   observer = null;
 }
 
-function applyCleanupState(enabled) {
-  cleanupEnabled = enabled;
+function applyRuntimeSettings(settings) {
+  cleanupEnabled = Boolean(settings.cleanupUiAdsEnabled);
+  youtubeNetworkShieldEnabled = Boolean(settings.blockYoutubeNetworkEnabled);
+  playbackCompatibilityEnabled = Boolean(settings.youtubePlaybackCompatibilityEnabled);
 
   if (cleanupEnabled) {
     runCleanup(document);
+  }
+
+  if (shouldObserveDom()) {
     startObserver();
+    maybeHandleYoutubePlaybackPrompt(document);
     return;
   }
 
@@ -383,15 +530,27 @@ function applyCleanupState(enabled) {
 }
 
 chrome.storage.sync.get(DEFAULT_SETTINGS, (settings) => {
-  applyCleanupState(Boolean(settings.cleanupUiAdsEnabled));
+  applyRuntimeSettings(settings);
+
+  if (sessionStorage.getItem(COMPATIBILITY_RELOAD_SESSION_KEY)) {
+    sessionStorage.removeItem(COMPATIBILITY_RELOAD_SESSION_KEY);
+    showCompatibilityNotice("YouTube playback compatibility is active.");
+  }
 });
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
-  if (areaName !== "sync" || !changes.cleanupUiAdsEnabled) {
+  if (
+    areaName !== "sync" ||
+    (!changes.cleanupUiAdsEnabled &&
+      !changes.blockYoutubeNetworkEnabled &&
+      !changes.youtubePlaybackCompatibilityEnabled)
+  ) {
     return;
   }
 
-  applyCleanupState(Boolean(changes.cleanupUiAdsEnabled.newValue));
+  chrome.storage.sync.get(DEFAULT_SETTINGS, (settings) => {
+    applyRuntimeSettings(settings);
+  });
 });
 
 })();
