@@ -43,6 +43,8 @@ const CARD_CONTAINER_HINT_SELECTORS = [
 ].join(",");
 
 const SPONSORED_TEXT_REGEX = /\bsponsored\b/i;
+const CTA_TEXT_REGEX =
+  /\b(learn more|shop now|sign up|book now|get quote|download|register|apply now|watch more|see more)\b/i;
 const MAX_SCAN_CANDIDATES = 700;
 
 let shieldEnabled = true;
@@ -289,6 +291,84 @@ function hasSponsoredByline(container) {
   return false;
 }
 
+function hasSponsoredKeywordNode(container) {
+  if (!(container instanceof Element)) {
+    return false;
+  }
+
+  const nodes = container.querySelectorAll("span, a, div[dir='auto'], div[role='button']");
+  let scanned = 0;
+
+  for (const node of nodes) {
+    scanned += 1;
+
+    if (scanned > 120) {
+      break;
+    }
+
+    const text = normalizeText(node.textContent || "");
+
+    if (!text || text.length > 80) {
+      continue;
+    }
+
+    if (text === "Sponsored" || /^sponsored(?:\b|\s|\u00b7|\.|:)/i.test(text)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function hasAdCtaButton(container) {
+  if (!(container instanceof Element)) {
+    return false;
+  }
+
+  const nodes = container.querySelectorAll("a, button, div[role='button'], span");
+  let scanned = 0;
+
+  for (const node of nodes) {
+    scanned += 1;
+
+    if (scanned > 80) {
+      break;
+    }
+
+    const text = normalizeText(node.textContent || "");
+
+    if (!text || text.length > 42) {
+      continue;
+    }
+
+    if (CTA_TEXT_REGEX.test(text)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function hasSponsoredHeaderPattern(container) {
+  if (!(container instanceof Element)) {
+    return false;
+  }
+
+  const text = normalizeText(container.textContent || "");
+
+  if (!text) {
+    return false;
+  }
+
+  const lead = text.slice(0, 240);
+
+  if (!SPONSORED_TEXT_REGEX.test(lead)) {
+    return false;
+  }
+
+  return /^(?:.{0,140})\bsponsored\b/i.test(lead);
+}
+
 function findLikelyCardContainer(node) {
   if (!(node instanceof Element)) {
     return null;
@@ -318,21 +398,28 @@ function isLikelySponsoredFeedUnit(unit) {
     return false;
   }
 
-  if (hasAdDisclosureLink(unit) || hasSponsoredByline(unit)) {
-    return true;
-  }
-
-  const hasSponsoredSignal = hasLeadingSponsoredText(unit) || hasSponsoredByline(unit);
+  const hasSponsoredSignal =
+    hasAdDisclosureLink(unit) ||
+    hasSponsoredByline(unit) ||
+    hasSponsoredKeywordNode(unit) ||
+    hasSponsoredHeaderPattern(unit);
 
   if (!hasSponsoredSignal) {
     return false;
   }
 
-  if (!(hasExternalDestinationLink(unit) || hasLynxOutboundSignal(unit) || hasAdDisclosureLink(unit))) {
+  const hasTrafficSignal =
+    hasExternalDestinationLink(unit) || hasLynxOutboundSignal(unit) || hasAdDisclosureLink(unit);
+
+  if (!hasTrafficSignal && !hasAdCtaButton(unit) && !hasMediaCreative(unit)) {
     return false;
   }
 
-  if (hasMediaCreative(unit)) {
+  if (hasAdDisclosureLink(unit) || hasSponsoredByline(unit) || hasSponsoredKeywordNode(unit)) {
+    return true;
+  }
+
+  if (hasLeadingSponsoredText(unit) && (hasTrafficSignal || hasAdCtaButton(unit))) {
     return true;
   }
 
