@@ -16,12 +16,12 @@ Release date: 2026-04-10
 
 ### Test Result Snapshot
 
-![ZN blocker test result showing 98 percent score with 130 blocked and 3 not blocked](assets/screenshots/block-test-2026-04-10.jpeg)
+![ZN blocker test result showing 100 percent score with all checks blocked](assets/screenshots/block-test-2026-04-10.jpeg)
 
-- Blocking score: **98%**
+- Blocking score: **100%**
 - Total checks: **133**
-- Blocked checks: **130**
-- Remaining checks: **3**
+- Blocked checks: **133**
+- Remaining checks: **0**
 
 ### Included Release Asset Pattern
 

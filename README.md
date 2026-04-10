@@ -26,12 +26,12 @@ ZN blocker is a Manifest V3 extension for Chromium browsers that aggressively su
 
 The image below is the latest real test snapshot requested in this update.
 
-![ZN blocker test result showing 98 percent score, 130 blocked and 3 not blocked](assets/screenshots/block-test-2026-04-10.jpeg)
+![ZN blocker test result showing 100 percent score with all checks blocked](assets/screenshots/block-test-2026-04-10.jpeg)
 
-- Score: **98%**
+- Score: **100%**
 - Total checks: **133**
-- Blocked: **130**
-- Not blocked: **3**
+- Blocked: **133**
+- Not blocked: **0**
 
 ## Core Capabilities
 
