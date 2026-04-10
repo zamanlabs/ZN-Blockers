@@ -29,8 +29,31 @@ const MAX_URLS_PER_SCAN = 220;
 const RESCAN_DELAY_MS = 1300;
 
 let scanningEnabled = true;
+let extensionContextAlive = true;
 let scanTimer = null;
 let observer = null;
+
+function isContextInvalidError(error) {
+  const message = String(error?.message || error || "");
+  return /Extension context invalidated/i.test(message);
+}
+
+function markContextInvalid() {
+  if (!extensionContextAlive) {
+    return;
+  }
+
+  extensionContextAlive = false;
+  applyScanningState(false);
+}
+
+function isRuntimeAvailable() {
+  try {
+    return Boolean(chrome?.runtime?.id);
+  } catch {
+    return false;
+  }
+}
 
 function parseHttpUrl(rawUrl, baseUrl = window.location.href) {
   if (typeof rawUrl !== "string" || !rawUrl.trim()) {
@@ -91,17 +114,40 @@ function collectCandidateUrls(root = document) {
 }
 
 function sendCandidates(urls) {
-  if (!scanningEnabled || !Array.isArray(urls) || urls.length === 0) {
+  if (
+    !scanningEnabled ||
+    !extensionContextAlive ||
+    !Array.isArray(urls) ||
+    urls.length === 0
+  ) {
     return;
   }
 
-  chrome.runtime.sendMessage({
-    type: "AUTO_LEARN_PAGE_URLS",
-    pageUrl: window.location.href,
-    urls
-  }).catch(() => {
-    // Ignore errors when service worker is restarting.
-  });
+  if (!isRuntimeAvailable()) {
+    markContextInvalid();
+    return;
+  }
+
+  try {
+    const sendResult = chrome.runtime.sendMessage({
+      type: "AUTO_LEARN_PAGE_URLS",
+      pageUrl: window.location.href,
+      urls
+    });
+
+    // In some extension environments this returns void, in others it returns a Promise.
+    if (sendResult && typeof sendResult.catch === "function") {
+      sendResult.catch((error) => {
+        if (isContextInvalidError(error)) {
+          markContextInvalid();
+        }
+      });
+    }
+  } catch (error) {
+    if (isContextInvalidError(error)) {
+      markContextInvalid();
+    }
+  }
 }
 
 function runScan(root = document) {
@@ -110,7 +156,7 @@ function runScan(root = document) {
 }
 
 function queueRescan() {
-  if (!scanningEnabled || scanTimer) {
+  if (!scanningEnabled || !extensionContextAlive || scanTimer) {
     return;
   }
 
@@ -176,11 +222,32 @@ function applyScanningState(enabled) {
   startObserver();
 }
 
-chrome.storage.sync.get(DEFAULT_SETTINGS, (settings) => {
-  applyScanningState(Boolean(settings.blockAutoLearningEnabled));
-});
+try {
+  chrome.storage.sync.get(DEFAULT_SETTINGS, (settings) => {
+    const runtimeError = chrome.runtime?.lastError;
+
+    if (runtimeError && isContextInvalidError(runtimeError)) {
+      markContextInvalid();
+      return;
+    }
+
+    if (!extensionContextAlive) {
+      return;
+    }
+
+    applyScanningState(Boolean(settings.blockAutoLearningEnabled));
+  });
+} catch (error) {
+  if (isContextInvalidError(error)) {
+    markContextInvalid();
+  }
+}
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (!extensionContextAlive) {
+    return;
+  }
+
   if (areaName !== "sync" || !changes.blockAutoLearningEnabled) {
     return;
   }
