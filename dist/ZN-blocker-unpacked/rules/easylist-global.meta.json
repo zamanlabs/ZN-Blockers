@@ -1,0 +1,19 @@
+{
+  "id": "easylist_global_ads",
+  "name": "EasyList",
+  "source": "https://easylist.to/easylist/easylist.txt",
+  "sourceUrl": "https://easylist.to/easylist/easylist.txt",
+  "usedCache": false,
+  "generatedAt": "2026-04-09T18:21:09.811Z",
+  "maxRules": 29000,
+  "sourceTotalLines": 89193,
+  "sourceRuleLines": 64993,
+  "generatedRules": 29000,
+  "blockRules": 29000,
+  "allowRules": 0,
+  "skippedByReason": {
+    "max-rules-reached": 35831,
+    "negated-resource-type": 91,
+    "unsupported-option:popup": 71
+  }
+}

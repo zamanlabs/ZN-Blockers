@@ -1,0 +1,29 @@
+{
+  "id": "easyprivacy_global",
+  "name": "EasyPrivacy",
+  "source": "rules/links.txt",
+  "sourceUrl": null,
+  "usedCache": false,
+  "generatedAt": "2026-04-09T18:21:09.366Z",
+  "maxRules": 29000,
+  "sourceTotalLines": 56049,
+  "sourceRuleLines": 55264,
+  "generatedRules": 29000,
+  "blockRules": 28998,
+  "allowRules": 2,
+  "skippedByReason": {
+    "max-rules-reached": 26220,
+    "negated-resource-type": 20,
+    "unsupported-pattern": 11,
+    "unsupported-option:redirect=noop.js": 2,
+    "unsupported-option:redirect=chartbeat.js": 2,
+    "unsupported-option:redirect=noop.txt": 2,
+    "unsupported-option:rewrite=abp-resource:blank-js": 1,
+    "unsupported-option:redirect=nooptext": 1,
+    "unsupported-option:method=post": 1,
+    "unsupported-option:redirect=googletagmanager_gtm.js": 1,
+    "unsupported-option:redirect=1x1.gif": 1,
+    "unsupported-option:redirect-rule": 1,
+    "unsupported-option:redirect=fingerprint2.js": 1
+  }
+}

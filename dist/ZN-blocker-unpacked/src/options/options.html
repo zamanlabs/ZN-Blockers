@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>ZN blocker Settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <header class="hero card">
+        <div class="hero-main">
+          <img
+            class="brand-mark"
+            src="../../assets/logo/zn-blocker-mark.svg"
+            alt="ZN blocker logo"
+            width="62"
+            height="62"
+          />
+          <div class="hero-copy">
+            <p class="eyebrow">Protection Settings</p>
+            <h1>ZN blocker Settings</h1>
+            <p>Manage core shields, adaptive blocking behavior, and host-level controls.</p>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button id="openDiagnosticsButton" class="hero-button" type="button">Diagnostics</button>
+          <p class="hero-note">Changes apply immediately across popup, settings, and diagnostics.</p>
+        </div>
+      </header>
+
+      <section class="signal-grid" aria-label="Protection architecture">
+        <article class="signal-card">
+          <p>Filtering Capacity</p>
+          <strong>87K+ Static Rules</strong>
+        </article>
+        <article class="signal-card">
+          <p>YouTube Focus</p>
+          <strong>Network + UI Sponsorship Cleanup</strong>
+        </article>
+        <article class="signal-card">
+          <p>Facebook Shield</p>
+          <strong>Sponsored Feed Cleanup + Tracking Block</strong>
+        </article>
+      </section>
+
+      <section class="feature-grid" aria-label="Feature listing">
+        <article class="feature-card">
+          <h2>Core Web Shield</h2>
+          <p>Unifies global tracker, ad-network, and redirect filtering for daily browsing.</p>
+        </article>
+        <article class="feature-card">
+          <h2>YouTube Sponsorship Shield</h2>
+          <p>Combines request blocking with visual cleanup to suppress sponsored YouTube surfaces.</p>
+        </article>
+        <article class="feature-card">
+          <h2>OEM + Google Tracking Shield</h2>
+          <p>Targets mobile OEM telemetry and high-volume Google analytics/tracking endpoints.</p>
+        </article>
+        <article class="feature-card">
+          <h2>Facebook Sponsored + Tracking Shield</h2>
+          <p>Hides sponsored Facebook feed units and blocks common Facebook tracking endpoints.</p>
+        </article>
+        <article class="feature-card">
+          <h2>Visual Interruption Shield</h2>
+          <p>Removes banner flashes and click-trap overlays that hijack normal navigation.</p>
+        </article>
+      </section>
+
+      <section class="card settings-card" aria-label="Settings">
+        <h2>Simple Shield Controls</h2>
+
+        <label class="setting-row" for="coreShieldToggle">
+          <span class="setting-copy">
+            <strong>Core web shield</strong>
+            <small>Turns on global tracker + global ad + provider hard shield + redirect protection together.</small>
+          </span>
+          <span class="switch">
+            <input id="coreShieldToggle" type="checkbox" />
+            <span class="switch-ui" aria-hidden="true"></span>
+          </span>
+        </label>
+
+        <label class="setting-row" for="youtubeShieldToggle">
+          <span class="setting-copy">
+            <strong>YouTube sponsorship shield</strong>
+            <small>Enables YouTube network filtering and promoted-UI cleanup in one switch.</small>
+          </span>
+          <span class="switch">
+            <input id="youtubeShieldToggle" type="checkbox" />
+            <span class="switch-ui" aria-hidden="true"></span>
+          </span>
+        </label>
+
+        <label class="setting-row" for="youtubePlaybackCompatibilityToggle">
+          <span class="setting-copy">
+            <strong>YouTube playback compatibility</strong>
+            <small>If playback warning appears, switch YouTube to compatibility mode automatically.</small>
+          </span>
+          <span class="switch">
+            <input id="youtubePlaybackCompatibilityToggle" type="checkbox" />
+            <span class="switch-ui" aria-hidden="true"></span>
+          </span>
+        </label>
+
+        <label class="setting-row" for="youtubePreplayCompatibilityToggle">
+          <span class="setting-copy">
+            <strong>YouTube pre-play compatibility</strong>
+            <small>Switches YouTube to compatibility mode before watch playback starts.</small>
+          </span>
+          <span class="switch">
+            <input id="youtubePreplayCompatibilityToggle" type="checkbox" />
+            <span class="switch-ui" aria-hidden="true"></span>
+          </span>
+        </label>
+
+        <label class="setting-row" for="facebookShieldToggle">
+          <span class="setting-copy">
+            <strong>Facebook sponsored shield</strong>
+            <small>Blocks Facebook sponsored feed units and tracking requests.</small>
+          </span>
+          <span class="switch">
+            <input id="facebookShieldToggle" type="checkbox" />
+            <span class="switch-ui" aria-hidden="true"></span>
+          </span>
+        </label>
+
+        <label class="setting-row" for="oemGoogleShieldToggle">
+          <span class="setting-copy">
+            <strong>OEM + Google tracking shield</strong>
+            <small>Blocks Samsung/Xiaomi/Oppo/Vivo telemetry and strong Google analytics endpoints.</small>
+          </span>
+          <span class="switch">
+            <input id="oemGoogleShieldToggle" type="checkbox" />
+            <span class="switch-ui" aria-hidden="true"></span>
+          </span>
+        </label>
+
+        <label class="setting-row" for="visualShieldToggle">
+          <span class="setting-copy">
+            <strong>Visual interruption shield</strong>
+            <small>Turns on flash/banner removal and popup click-trap protection.</small>
+          </span>
+          <span class="switch">
+            <input id="visualShieldToggle" type="checkbox" />
+            <span class="switch-ui" aria-hidden="true"></span>
+          </span>
+        </label>
+
+        <label class="setting-row" for="adaptiveShieldToggle">
+          <span class="setting-copy">
+            <strong>Adaptive learning shield</strong>
+            <small>Learns repeated ad/tracker patterns and auto-adds safe dynamic blocking rules.</small>
+          </span>
+          <span class="switch">
+            <input id="adaptiveShieldToggle" type="checkbox" />
+            <span class="switch-ui" aria-hidden="true"></span>
+          </span>
+        </label>
+      </section>
+
+      <section class="card adaptive-card" aria-label="Adaptive diagnostics panel">
+        <h2>Adaptive Diagnostics</h2>
+        <div class="adaptive-stats">
+          <article>
+            <p>Tracked Candidates</p>
+            <strong id="adaptiveTrackedValue">-</strong>
+          </article>
+          <article>
+            <p>Promoted Rules</p>
+            <strong id="adaptivePromotedValue">-</strong>
+          </article>
+          <article>
+            <p>Ready to Promote</p>
+            <strong id="adaptiveReadyValue">-</strong>
+          </article>
+          <article>
+            <p>Manual Host Blocks</p>
+            <strong id="adaptiveManualValue">-</strong>
+          </article>
+        </div>
+        <p id="adaptiveStatusText" class="adaptive-note" aria-live="polite">Loading adaptive state...</p>
+      </section>
+
+      <section class="card host-lists-card" aria-label="Adaptive host controls">
+        <h2>Adaptive Host Controls</h2>
+        <p class="host-help">
+          Allow list hosts are skipped by adaptive learning and manual block actions. Deny list hosts are promoted immediately when detected.
+        </p>
+
+        <div class="host-grid">
+          <article class="host-editor">
+            <h3>Allow list</h3>
+            <div class="host-input-row">
+              <input id="allowHostInput" type="text" placeholder="example.com" spellcheck="false" />
+              <button id="addAllowHostButton" type="button" class="host-add-button">Add</button>
+            </div>
+            <ul id="allowHostList" class="host-list" aria-label="Allow list hosts"></ul>
+          </article>
+
+          <article class="host-editor">
+            <h3>Deny list</h3>
+            <div class="host-input-row">
+              <input id="denyHostInput" type="text" placeholder="tracker.example.com" spellcheck="false" />
+              <button id="addDenyHostButton" type="button" class="host-add-button">Add</button>
+            </div>
+            <ul id="denyHostList" class="host-list" aria-label="Deny list hosts"></ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="card manual-rules-card" aria-label="Manual rules controls">
+        <h2>Manual Rules</h2>
+        <p class="host-help">
+          Rules saved from right-click Block this content appear here. You can remove any host block or element hide selector.
+        </p>
+        <button id="refreshManualRulesButton" type="button" class="hero-button manual-refresh-button">
+          Refresh Manual Rules
+        </button>
+
+        <div class="host-grid">
+          <article class="host-editor">
+            <h3>Manual Host Blocks</h3>
+            <ul id="manualHostRuleList" class="host-list" aria-label="Manual host rules"></ul>
+          </article>
+
+          <article class="host-editor">
+            <h3>Manual Hide Rules</h3>
+            <ul id="manualHideRuleList" class="host-list" aria-label="Manual hide rules"></ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="card info">
+        <h2>Mobile Support</h2>
+        <p>
+          This layout keeps controls readable and touch-friendly on narrow screens.
+        </p>
+        <p id="mobileModeText" class="mobile-mode" aria-live="polite"></p>
+      </section>
+
+      <p id="statusText" class="status" aria-live="polite"></p>
+    </main>
+
+    <script src="options.js" type="module"></script>
+  </body>
+</html>

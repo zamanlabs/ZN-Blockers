@@ -1,0 +1,26 @@
+<svg width="820" height="220" viewBox="0 0 820 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="vsWordBg" x1="12" y1="12" x2="208" y2="208" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F8F83" />
+      <stop offset="1" stop-color="#1368D6" />
+    </linearGradient>
+    <linearGradient id="vsWordText" x1="240" y1="40" x2="760" y2="190" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#12305A" />
+      <stop offset="1" stop-color="#1368D6" />
+    </linearGradient>
+  </defs>
+
+  <rect x="12" y="12" width="196" height="196" rx="44" fill="url(#vsWordBg)" />
+  <rect x="12" y="12" width="196" height="196" rx="44" stroke="white" stroke-opacity="0.42" stroke-width="2.5" />
+
+  <path
+    d="M110 50L154 70V123C154 137.9 147.4 151.9 136.3 161.4L110 183L83.7 161.4C72.6 151.9 66 137.9 66 123V70L110 50Z"
+    fill="white"
+    fill-opacity="0.95"
+  />
+  <path d="M86 114L103 132L134 102" stroke="#0F8F83" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" />
+
+  <text x="242" y="124" fill="url(#vsWordText)" font-family="Aptos, Bahnschrift, Segoe UI, sans-serif" font-size="86" font-weight="800" letter-spacing="0.4">
+    ZN blocker
+  </text>
+</svg>

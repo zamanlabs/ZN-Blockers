@@ -1,0 +1,1972 @@
+﻿[
+    {
+        "id":  1,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||samsungads.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  2,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||samsungacr.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  3,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||samsungcloudsolution.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  4,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||ads.samsung.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  5,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||analytics.samsungknox.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  6,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||tracking.miui.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  7,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||tracking.intl.miui.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  8,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||api.ad.xiaomi.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  9,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||sdkconfig.ad.xiaomi.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  10,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||globalapi.ad.xiaomi.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  11,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||ad.intl.xiaomi.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  12,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||data.mistat.xiaomi.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  13,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||data.mistat.intl.xiaomi.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  14,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||stat.mistat.xiaomi.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  15,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||sdkconfig.ad.intl.xiaomi.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  16,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||adsfs.oppomobile.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  17,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||data.ads.oppomobile.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  18,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||adx.ads.oppomobile.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  19,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||tracking.coloros.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  20,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||adsfs.heytapmobi.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  21,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||adx.ads.heytapmobi.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  22,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||bdapi.ads.heytapmobi.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  23,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||api.ads.heytapmobi.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  24,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||api.ads.realmemobile.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  25,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||adlog.vivo.com.cn^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  26,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||adreq.vivo.com.cn^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  27,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||ad.vivo.com.cn^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  28,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||ads.vivo.com.cn^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  29,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||stsdk.vivo.com.cn^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  30,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||ad.huawei.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  31,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||analytics.hicloud.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  32,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||metrics.data.hicloud.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  33,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||ads-drcn.platform.hicloud.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  34,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||logservice.hicloud.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  35,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||ads.lenovo.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  36,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||adapi.lenovomm.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  37,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||analytics.lenovomm.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  38,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||tracking.motorola.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  39,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||metrics.motorola.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  40,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||fls-na.amazon-adsystem.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  41,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||aax-us-east.amazon-adsystem.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  42,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||aax-eu.amazon-adsystem.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  43,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||amazon-adsystem.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  44,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||browser.events.data.microsoft.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  45,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||mobile.events.data.microsoft.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  46,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||vortex.data.microsoft.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  47,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||telemetry.microsoft.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  48,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||google-analytics.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  49,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||ssl.google-analytics.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  50,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "sub_frame",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||app-measurement.com^",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  51,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||google-analytics.com/collect?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  52,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||google-analytics.com/r/collect?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  53,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||google-analytics.com/g/collect?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  54,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||google-analytics.com/j/collect?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  55,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||google-analytics.com/mp/collect?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  56,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||google-analytics.com/debug/collect?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  57,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||google-analytics.com/batch?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  58,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||google-analytics.com/analytics.js",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  59,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||google-analytics.com/ga.js",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  60,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||analytics.google.com/g/collect?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  61,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||analytics.google.com/collect?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  62,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||stats.g.doubleclick.net/g/collect?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  63,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||stats.g.doubleclick.net/j/collect?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  64,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||stats.g.doubleclick.net/collect?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  65,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||www.googletagmanager.com/gtm.js?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  66,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||www.googletagmanager.com/gtag/js?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  67,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||www.googletagmanager.com/a?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  68,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||www.googletagmanager.com/gtag/destination?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  69,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||www.google.com/ads/ga-audiences?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  70,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||www.google.com/pagead/1p-conversion/",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  71,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||www.googleadservices.com/pagead/conversion/",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  72,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||googleads.g.doubleclick.net/pagead/viewthroughconversion/",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  73,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||doubleclick.net/ddm/activity/",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  74,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||doubleclick.net/ddm/trackclk/",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  75,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||adservice.google.com/ddm/fls/",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  76,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||www.googleadservices.com/pagead/aclk?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  77,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||pagead2.googlesyndication.com/pagead/gen_204?id=",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  78,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||www.google.com/ccm/collect?",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  79,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||tracking.miui.com/track/",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  80,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||tracking.intl.miui.com/track/",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  81,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||api.ad.xiaomi.com/ad/get",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  82,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||sdkconfig.ad.xiaomi.com/api/",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  83,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||adsfs.oppomobile.com/ads/",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  84,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||adlog.vivo.com.cn/adlog",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  85,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||adreq.vivo.com.cn/adreq",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  86,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||ads.lenovo.com/track/",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  87,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||fls-na.amazon-adsystem.com/1/",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id":  88,
+        "priority":  1,
+        "action":  {
+                       "type":  "block"
+                   },
+        "condition":  {
+                          "resourceTypes":  [
+                                                "script",
+                                                "image",
+                                                "xmlhttprequest",
+                                                "ping",
+                                                "other"
+                                            ],
+                          "urlFilter":  "||browser.events.data.microsoft.com/OneCollector/",
+                          "domainType":  "thirdParty"
+                      }
+    },
+    {
+        "id": 89,
+        "priority": 100,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||iot-eu-logser.realme.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "ping",
+                "font",
+                "stylesheet",
+                "media",
+                "other"
+            ]
+        }
+    },
+    {
+        "id": 90,
+        "priority": 100,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||iot-logser.realme.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "ping",
+                "font",
+                "stylesheet",
+                "media",
+                "other"
+            ]
+        }
+    },
+    {
+        "id": 91,
+        "priority": 100,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||bdapi-ads.realmemobile.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "ping",
+                "font",
+                "stylesheet",
+                "media",
+                "other"
+            ]
+        }
+    },
+    {
+        "id": 92,
+        "priority": 100,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||bdapi-in-ads.realmemobile.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "ping",
+                "font",
+                "stylesheet",
+                "media",
+                "other"
+            ]
+        }
+    },
+    {
+        "id": 93,
+        "priority": 100,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||data.mistat.india.xiaomi.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "ping",
+                "font",
+                "stylesheet",
+                "media",
+                "other"
+            ]
+        }
+    },
+    {
+        "id": 94,
+        "priority": 100,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||data.mistat.rus.xiaomi.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "ping",
+                "font",
+                "stylesheet",
+                "media",
+                "other"
+            ]
+        }
+    },
+    {
+        "id": 95,
+        "priority": 100,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||tracking.rus.miui.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "ping",
+                "font",
+                "stylesheet",
+                "media",
+                "other"
+            ]
+        }
+    },
+    {
+        "id": 96,
+        "priority": 100,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||ck.ads.oppomobile.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "ping",
+                "font",
+                "stylesheet",
+                "media",
+                "other"
+            ]
+        }
+    },
+    {
+        "id": 97,
+        "priority": 100,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||iadsdk.apple.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "ping",
+                "font",
+                "stylesheet",
+                "media",
+                "other"
+            ]
+        }
+    },
+    {
+        "id": 98,
+        "priority": 100,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||metrics.icloud.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "ping",
+                "font",
+                "stylesheet",
+                "media",
+                "other"
+            ]
+        }
+    },
+    {
+        "id": 99,
+        "priority": 100,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||api-adservices.apple.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "ping",
+                "font",
+                "stylesheet",
+                "media",
+                "other"
+            ]
+        }
+    },
+    {
+        "id": 100,
+        "priority": 100,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||books-analytics-events.apple.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "ping",
+                "font",
+                "stylesheet",
+                "media",
+                "other"
+            ]
+        }
+    },
+    {
+        "id": 101,
+        "priority": 100,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||weather-analytics-events.apple.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "ping",
+                "font",
+                "stylesheet",
+                "media",
+                "other"
+            ]
+        }
+    },
+    {
+        "id": 102,
+        "priority": 100,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||notes-analytics-events.apple.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "ping",
+                "font",
+                "stylesheet",
+                "media",
+                "other"
+            ]
+        }
+    },
+    {
+        "id": 103,
+        "priority": 100,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||grs.hicloud.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "ping",
+                "font",
+                "stylesheet",
+                "media",
+                "other"
+            ]
+        }
+    },
+    {
+        "id": 104,
+        "priority": 100,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "||smetrics.samsung.com^",
+            "resourceTypes": [
+                "script",
+                "image",
+                "sub_frame",
+                "xmlhttprequest",
+                "ping",
+                "font",
+                "stylesheet",
+                "media",
+                "other"
+            ]
+        }
+    }
+]

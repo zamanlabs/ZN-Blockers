@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>ZN blocker</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="popup-shell">
+      <header class="topbar">
+        <div class="brand-wrap">
+          <img
+            class="hero-mark"
+            src="../../assets/logo/zn-blocker-mark.svg"
+            alt="ZN blocker logo"
+            width="36"
+            height="36"
+          />
+          <div>
+            <p class="eyebrow">Unified Shield Control</p>
+            <h1>ZN blocker</h1>
+          </div>
+        </div>
+        <span class="status-pill" id="statusPill">All OFF</span>
+      </header>
+
+      <section class="master-panel" aria-label="Master protection control">
+        <div class="power-core" id="powerCore">
+          <button
+            id="masterPowerButton"
+            class="power-button is-off"
+            type="button"
+            aria-pressed="false"
+          >
+            <span class="power-title">Protection Engine</span>
+            <strong id="masterPowerLabel">OFF</strong>
+          </button>
+          <span class="power-ring" aria-hidden="true"></span>
+        </div>
+        <p id="masterStateText" class="master-state">All shields are currently off.</p>
+      </section>
+
+      <details class="feature-dropdown" id="featureDropdown">
+        <summary>Feature Controls</summary>
+        <section class="settings-panel" aria-label="Feature settings">
+          <label class="toggle-row" for="globalTrackerToggle">
+            <span class="toggle-copy">
+              <strong>Global tracker filters</strong>
+              <small>EasyPrivacy tracking and analytics suppression</small>
+            </span>
+            <span class="switch">
+              <input id="globalTrackerToggle" type="checkbox" />
+              <span class="switch-ui" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <label class="toggle-row" for="globalAdsToggle">
+            <span class="toggle-copy">
+              <strong>Global ad filters</strong>
+              <small>EasyList, AdGuard, and provider hard shield</small>
+            </span>
+            <span class="switch">
+              <input id="globalAdsToggle" type="checkbox" />
+              <span class="switch-ui" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <label class="toggle-row" for="youtubeNetworkToggle">
+            <span class="toggle-copy">
+              <strong>YouTube network shield</strong>
+              <small>YouTube ad request and telemetry filtering</small>
+            </span>
+            <span class="switch">
+              <input id="youtubeNetworkToggle" type="checkbox" />
+              <span class="switch-ui" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <label class="toggle-row" for="youtubeCleanupToggle">
+            <span class="toggle-copy">
+              <strong>YouTube UI cleanup</strong>
+              <small>Sponsored card and ad panel visual cleanup</small>
+            </span>
+            <span class="switch">
+              <input id="youtubeCleanupToggle" type="checkbox" />
+              <span class="switch-ui" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <label class="toggle-row" for="youtubePlaybackCompatibilityToggle">
+            <span class="toggle-copy">
+              <strong>YouTube playback compatibility</strong>
+              <small>If playback warning appears, switch YouTube to compatibility mode automatically</small>
+            </span>
+            <span class="switch">
+              <input id="youtubePlaybackCompatibilityToggle" type="checkbox" />
+              <span class="switch-ui" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <label class="toggle-row" for="youtubePreplayCompatibilityToggle">
+            <span class="toggle-copy">
+              <strong>YouTube pre-play compatibility</strong>
+              <small>Switches YouTube to compatibility mode before watch playback starts</small>
+            </span>
+            <span class="switch">
+              <input id="youtubePreplayCompatibilityToggle" type="checkbox" />
+              <span class="switch-ui" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <label class="toggle-row" for="facebookShieldToggle">
+            <span class="toggle-copy">
+              <strong>Facebook sponsored shield</strong>
+              <small>Sponsored post and tracker endpoint suppression</small>
+            </span>
+            <span class="switch">
+              <input id="facebookShieldToggle" type="checkbox" />
+              <span class="switch-ui" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <label class="toggle-row" for="oemGoogleShieldToggle">
+            <span class="toggle-copy">
+              <strong>OEM and Google telemetry shield</strong>
+              <small>Realme, Xiaomi, Oppo, Samsung, Apple, Huawei, and Google endpoints</small>
+            </span>
+            <span class="switch">
+              <input id="oemGoogleShieldToggle" type="checkbox" />
+              <span class="switch-ui" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <label class="toggle-row" for="redirectPopupToggle">
+            <span class="toggle-copy">
+              <strong>Redirect popup shield</strong>
+              <small>Clicktrap and redirect popup interception</small>
+            </span>
+            <span class="switch">
+              <input id="redirectPopupToggle" type="checkbox" />
+              <span class="switch-ui" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <label class="toggle-row" for="flashBannerToggle">
+            <span class="toggle-copy">
+              <strong>Flash and banner visual shield</strong>
+              <small>Blocks static ad boxes and visual interruptions</small>
+            </span>
+            <span class="switch">
+              <input id="flashBannerToggle" type="checkbox" />
+              <span class="switch-ui" aria-hidden="true"></span>
+            </span>
+          </label>
+
+          <label class="toggle-row" for="adaptiveShieldToggle">
+            <span class="toggle-copy">
+              <strong>Adaptive learning shield</strong>
+              <small>Learns repeated ad and tracker domains for dynamic blocking</small>
+            </span>
+            <span class="switch">
+              <input id="adaptiveShieldToggle" type="checkbox" />
+              <span class="switch-ui" aria-hidden="true"></span>
+            </span>
+          </label>
+        </section>
+      </details>
+
+      <section class="support-card" aria-label="Support the developer">
+        <div>
+          <p class="support-title">Support the Developer</p>
+          <p class="support-copy">Payment method: Send Money</p>
+        </div>
+        <button class="action-button support" id="openSupportButton" type="button">
+          Send Money
+        </button>
+      </section>
+
+      <section class="quick-actions" aria-label="Actions">
+        <button class="action-button secondary" id="openDiagnosticsButton" type="button">
+          Stats
+        </button>
+        <button class="action-button primary" id="openOptionsButton" type="button">
+          Settings
+        </button>
+        <button class="action-button secondary wide" id="clearSiteCacheButton" type="button">
+          Clean Site Cache
+        </button>
+      </section>
+
+      <p id="statusText" class="hint" aria-live="polite">
+        Use the center button to start or stop all shields at once.
+      </p>
+
+      <section id="supportModal" class="support-modal" hidden>
+        <button
+          id="supportModalBackdrop"
+          class="support-modal-backdrop"
+          type="button"
+          aria-label="Close support popup"
+        ></button>
+        <article
+          class="support-modal-card"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="supportModalTitle"
+        >
+          <div class="support-modal-header">
+            <h2 id="supportModalTitle">bKash Send Money</h2>
+            <button id="closeSupportModalButton" class="close-support-modal" type="button" aria-label="Close">
+              x
+            </button>
+          </div>
+          <img
+            class="support-qr-image"
+            src="../../assets/screenshots/bkash-send-money-qr.jpeg"
+            alt="bKash Send Money QR code"
+          />
+          <p class="support-modal-copy">Scan to pay using bKash Send Money.</p>
+        </article>
+      </section>
+    </main>
+
+    <script src="popup.js" type="module"></script>
+  </body>
+</html>

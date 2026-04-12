@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ZN blocker | Navigation safety check</title>
+    <link rel="stylesheet" href="blocked-navigation.css" />
+  </head>
+  <body>
+    <main class="warning-shell" role="main" aria-labelledby="warningTitle">
+      <header>
+        <p class="eyebrow">Navigation safety check</p>
+        <h1 id="warningTitle">This extension paused a suspicious redirect</h1>
+      </header>
+
+      <p class="lead-copy">
+        This extension is blocking you from going to this site directly. You can review the destination and decide what to do.
+      </p>
+
+      <section class="details-card" aria-label="Navigation details">
+        <p class="reason" id="reasonText">Reason: suspicious redirect pattern</p>
+        <dl>
+          <div class="detail-row">
+            <dt>Blocked link</dt>
+            <dd id="blockedUrlValue"></dd>
+          </div>
+          <div class="detail-row">
+            <dt>Destination</dt>
+            <dd id="targetUrlValue"></dd>
+          </div>
+          <div class="detail-row">
+            <dt>Source page</dt>
+            <dd id="sourceUrlValue"></dd>
+          </div>
+        </dl>
+      </section>
+
+      <p id="statusText" class="status-text" aria-live="polite"></p>
+
+      <section class="action-row" aria-label="Actions">
+        <button id="goBackButton" class="action-button secondary" type="button">Go back</button>
+        <button id="proceedButton" class="action-button primary" type="button">Proceed</button>
+      </section>
+    </main>
+
+    <script src="blocked-navigation.js" type="module"></script>
+  </body>
+</html>

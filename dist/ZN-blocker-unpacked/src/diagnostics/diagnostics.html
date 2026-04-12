@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>ZN blocker Diagnostics</title>
+    <link rel="stylesheet" href="diagnostics.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <header class="hero card">
+        <div class="hero-main">
+          <img
+            class="brand-mark"
+            src="../../assets/logo/zn-blocker-mark.svg"
+            alt="ZN blocker logo"
+            width="62"
+            height="62"
+          />
+          <div class="hero-copy">
+            <p class="eyebrow">Runtime Status</p>
+            <h1>Diagnostics</h1>
+            <p>Inspect ruleset health, adaptive learning state, and blocked-request activity.</p>
+            <ul class="diag-tags" aria-label="Diagnostics features">
+              <li>Ruleset Health</li>
+              <li>Live Counters</li>
+              <li>Adaptive State</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="actions" aria-label="Diagnostics actions">
+          <button id="openSettingsButton" type="button" class="neutral">Open Settings</button>
+          <button id="refreshButton" type="button">Refresh</button>
+          <button id="resetButton" type="button" class="danger">Reset Counters</button>
+        </div>
+      </header>
+
+      <section class="card stats">
+        <article>
+          <h2>Total Blocked (since reset)</h2>
+          <p id="totalBlockedValue" class="value">-</p>
+        </article>
+        <article>
+          <h2>Last Updated</h2>
+          <p id="lastUpdatedValue" class="value">-</p>
+        </article>
+        <article>
+          <h2>Listener Status</h2>
+          <p id="listenerStatusValue" class="value">-</p>
+        </article>
+      </section>
+
+      <section class="card">
+        <h2>Adaptive Engine</h2>
+        <div class="adaptive-grid">
+          <article>
+            <h3>Tracked Candidates</h3>
+            <p id="adaptiveTrackedValue" class="value">-</p>
+          </article>
+          <article>
+            <h3>Promoted Rules</h3>
+            <p id="adaptivePromotedValue" class="value">-</p>
+          </article>
+          <article>
+            <h3>Ready to Promote</h3>
+            <p id="adaptiveReadyValue" class="value">-</p>
+          </article>
+          <article>
+            <h3>Manual Host Blocks</h3>
+            <p id="adaptiveManualValue" class="value">-</p>
+          </article>
+        </div>
+        <p id="adaptiveSummary" class="muted">Loading adaptive summary...</p>
+        <ul id="adaptiveHostList" class="list"></ul>
+      </section>
+
+      <section class="signal-grid" aria-label="Health summary">
+        <article class="signal-card">
+          <p>Data Source</p>
+          <strong>Live Runtime Events</strong>
+        </article>
+        <article class="signal-card">
+          <p>Scope</p>
+          <strong>Global + YouTube + Redirect Protection</strong>
+        </article>
+        <article class="signal-card">
+          <p>Review Cycle</p>
+          <strong>Auto Refresh Every 6 Seconds</strong>
+        </article>
+      </section>
+
+      <section class="card">
+        <h2>Ruleset Counters</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Ruleset</th>
+              <th>Enabled</th>
+              <th>Static Rules</th>
+              <th>Blocked</th>
+            </tr>
+          </thead>
+          <tbody id="rulesetTableBody">
+            <tr>
+              <td colspan="4">Loading diagnostics...</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <h2>Matched Rules (Last 24h)</h2>
+        <p id="recentSummary" class="muted">Loading recent match summary...</p>
+        <ul id="recentRulesetList" class="list"></ul>
+      </section>
+
+      <p id="statusText" class="status" aria-live="polite"></p>
+    </main>
+
+    <script src="diagnostics.js" type="module"></script>
+  </body>
+</html>
