@@ -957,5 +957,267 @@
         "other"
       ]
     }
+  },
+  {
+    "id": 51,
+    "priority": 110,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "regexFilter": "^https?://[^?#]+/wp-content/plugins/interstitial-ads/js/interads\\.js(?:[?#].*)?$",
+      "resourceTypes": [
+        "script",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": 52,
+    "priority": 110,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "regexFilter": "^https?://[^?#]+/wp-content/plugins/interstitial-ads/js/jquery\\.countdown\\.js(?:[?#].*)?$",
+      "resourceTypes": [
+        "script",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": 53,
+    "priority": 110,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "regexFilter": "^https?://[^?#]+/wp-content/plugins/interstitial-ads/css/interads\\.css(?:[?#].*)?$",
+      "resourceTypes": [
+        "stylesheet",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": 54,
+    "priority": 110,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "||cdn.bannersnack.com/iframe/embed.js",
+      "resourceTypes": [
+        "script",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": 55,
+    "priority": 110,
+    "action": {
+      "type": "block"
+    },
+    "condition": {
+      "urlFilter": "||cdn.bannersnack.com^",
+      "resourceTypes": [
+        "sub_frame",
+        "image",
+        "media",
+        "xmlhttprequest",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": 56,
+    "priority": 10000,
+    "action": {
+      "type": "allow"
+    },
+    "condition": {
+      "initiatorDomains": [
+        "github.com",
+        "www.github.com",
+        "gist.github.com",
+        "githubassets.com",
+        "githubusercontent.com"
+      ],
+      "requestDomains": [
+        "githubassets.com",
+        "githubusercontent.com",
+        "api.github.com"
+      ],
+      "resourceTypes": [
+        "script",
+        "stylesheet",
+        "font",
+        "image",
+        "xmlhttprequest",
+        "sub_frame",
+        "object",
+        "media",
+        "ping",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": 57,
+    "priority": 10000,
+    "action": {
+      "type": "allow"
+    },
+    "condition": {
+      "initiatorDomains": [
+        "github.com",
+        "www.github.com",
+        "gist.github.com"
+      ],
+      "urlFilter": "||github.com/login",
+      "resourceTypes": [
+        "main_frame",
+        "sub_frame"
+      ]
+    }
+  },
+  {
+    "id": 58,
+    "priority": 10000,
+    "action": {
+      "type": "allow"
+    },
+    "condition": {
+      "domainType": "firstParty",
+      "resourceTypes": [
+        "script",
+        "stylesheet",
+        "font",
+        "image"
+      ]
+    }
+  },
+  {
+    "id": 59,
+    "priority": 10000,
+    "action": {
+      "type": "allow"
+    },
+    "condition": {
+      "initiatorDomains": [
+        "youtube.com",
+        "www.youtube.com",
+        "m.youtube.com",
+        "music.youtube.com",
+        "youtube-nocookie.com",
+        "youtubekids.com"
+      ],
+      "requestDomains": [
+        "ytimg.com",
+        "ggpht.com"
+      ],
+      "resourceTypes": [
+        "image",
+        "media",
+        "font",
+        "stylesheet",
+        "xmlhttprequest",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": 60,
+    "priority": 10000,
+    "action": {
+      "type": "allow"
+    },
+    "condition": {
+      "initiatorDomains": [
+        "youtube.com",
+        "www.youtube.com",
+        "m.youtube.com",
+        "music.youtube.com",
+        "youtube-nocookie.com",
+        "youtubekids.com"
+      ],
+      "regexFilter": "^https?://(?:youtubei|youtube)\\.googleapis\\.com/youtubei/v1/player(?:[?#].*)?$",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": 61,
+    "priority": 10000,
+    "action": {
+      "type": "allow"
+    },
+    "condition": {
+      "initiatorDomains": [
+        "youtube.com",
+        "www.youtube.com",
+        "m.youtube.com",
+        "music.youtube.com",
+        "youtube-nocookie.com",
+        "youtubekids.com"
+      ],
+      "urlFilter": "||youtube.com/youtubei/v1/player",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": 62,
+    "priority": 10000,
+    "action": {
+      "type": "allow"
+    },
+    "condition": {
+      "initiatorDomains": [
+        "youtube.com",
+        "www.youtube.com",
+        "m.youtube.com",
+        "music.youtube.com",
+        "youtube-nocookie.com",
+        "youtubekids.com"
+      ],
+      "urlFilter": "||youtube.com/youtubei/v1/get_watch",
+      "resourceTypes": [
+        "xmlhttprequest",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": 63,
+    "priority": 10000,
+    "action": {
+      "type": "allow"
+    },
+    "condition": {
+      "initiatorDomains": [
+        "youtube.com",
+        "www.youtube.com",
+        "m.youtube.com",
+        "music.youtube.com",
+        "youtube-nocookie.com",
+        "youtubekids.com"
+      ],
+      "requestDomains": [
+        "googlevideo.com"
+      ],
+      "urlFilter": "||googlevideo.com/videoplayback",
+      "resourceTypes": [
+        "media",
+        "xmlhttprequest",
+        "other"
+      ]
+    }
   }
 ]

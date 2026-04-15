@@ -25,8 +25,16 @@ const URL_ATTR_SELECTORS = [
 ].join(",");
 
 const URL_ATTR_KEYS = ["href", "src", "data-href", "data-url", "data-destination"];
-const MAX_URLS_PER_SCAN = 220;
-const RESCAN_DELAY_MS = 1300;
+const MAX_URLS_PER_SCAN = 120;
+const RESCAN_DELAY_MS = 2200;
+const SUPPRESSED_SCAN_SITE_SUFFIXES = Object.freeze([
+  "youtube.com",
+  "youtube-nocookie.com",
+  "google.com",
+  "googleusercontent.com",
+  "googlevideo.com",
+  "github.com"
+]);
 
 let scanningEnabled = true;
 let extensionContextAlive = true;
@@ -71,6 +79,18 @@ function parseHttpUrl(rawUrl, baseUrl = window.location.href) {
   } catch {
     return null;
   }
+}
+
+function isSuppressedScanSite() {
+  const host = (window.location.hostname || "").toLowerCase();
+
+  if (!host) {
+    return false;
+  }
+
+  return SUPPRESSED_SCAN_SITE_SUFFIXES.some(
+    (suffix) => host === suffix || host.endsWith(`.${suffix}`)
+  );
 }
 
 function collectCandidateUrls(root = document) {
@@ -167,7 +187,7 @@ function queueRescan() {
 }
 
 function startObserver() {
-  if (observer || !document.documentElement) {
+  if (observer || !document.documentElement || isSuppressedScanSite()) {
     return;
   }
 
@@ -176,17 +196,24 @@ function startObserver() {
       return;
     }
 
+    let hasAddedElement = false;
+
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
-        if (!(node instanceof Element)) {
-          continue;
+        if (node instanceof Element) {
+          hasAddedElement = true;
+          break;
         }
+      }
 
-        runScan(node);
+      if (hasAddedElement) {
+        break;
       }
     }
 
-    queueRescan();
+    if (hasAddedElement) {
+      queueRescan();
+    }
   });
 
   observer.observe(document.documentElement, {
@@ -213,6 +240,11 @@ function applyScanningState(enabled) {
       scanTimer = null;
     }
 
+    stopObserver();
+    return;
+  }
+
+  if (isSuppressedScanSite()) {
     stopObserver();
     return;
   }

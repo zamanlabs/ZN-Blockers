@@ -171,14 +171,49 @@ const AUTO_LEARN_HOST_SIGNAL_REGEX =
 const AUTO_LEARN_PATH_SIGNAL_REGEX =
   /(collect|tracking|analytics|telemetry|metrics|beacon|pixel|viewthrough|conversion|adclick|adservice|doubleclick|gtm\.js|gtag\/js|aclk)/i;
 
-const AUTO_LEARN_RESOURCE_TYPES = Object.freeze([
+const AUTO_LEARN_OBSERVATION_RESOURCE_TYPES = Object.freeze([
+  "script",
+  "xmlhttprequest",
+  "ping",
+  "sub_frame"
+]);
+
+const AUTO_LEARN_RULE_RESOURCE_TYPES = Object.freeze([
   "script",
   "image",
   "xmlhttprequest",
   "ping",
-  "sub_frame",
-  "other"
+  "sub_frame"
 ]);
+
+const PROTECTED_COMPATIBILITY_HOST_SUFFIXES = Object.freeze([
+  "youtube.com",
+  "youtube-nocookie.com",
+  "youtubei.googleapis.com",
+  "youtube.googleapis.com",
+  "googlevideo.com",
+  "ytimg.com",
+  "ggpht.com",
+  "gstatic.com",
+  "github.com",
+  "githubassets.com",
+  "githubusercontent.com",
+  "api.github.com",
+  "cdn.jsdelivr.net",
+  "cdnjs.cloudflare.com",
+  "unpkg.com",
+  "fonts.googleapis.com",
+  "fonts.gstatic.com"
+]);
+
+const AUTO_LEARN_WEBREQUEST_URL_PATTERNS = Object.freeze(
+  [...new Set(
+    AUTO_LEARN_TRACKING_HOST_SUFFIXES.flatMap((suffix) => [
+      `*://${suffix}/*`,
+      `*://*.${suffix}/*`
+    ])
+  )]
+);
 
 let diagnosticsStatePromise = null;
 let diagnosticsFlushTimer = null;
@@ -879,6 +914,18 @@ function isKnownTrackingHost(host) {
   );
 }
 
+function isProtectedCompatibilityHost(host) {
+  const normalized = normalizeHost(host);
+
+  if (!normalized) {
+    return false;
+  }
+
+  return PROTECTED_COMPATIBILITY_HOST_SUFFIXES.some(
+    (suffix) => normalized === suffix || normalized.endsWith(`.${suffix}`)
+  );
+}
+
 function scoreAutoLearnCandidate({
   host,
   pathname,
@@ -907,7 +954,7 @@ function scoreAutoLearnCandidate({
     score += 15;
   }
 
-  if (AUTO_LEARN_RESOURCE_TYPES.includes(resourceType)) {
+  if (AUTO_LEARN_OBSERVATION_RESOURCE_TYPES.includes(resourceType)) {
     score += 10;
   }
 
@@ -930,7 +977,7 @@ function createAutoLearnRule(ruleId, host) {
     condition: {
       urlFilter: `||${host}^`,
       domainType: "thirdParty",
-      resourceTypes: AUTO_LEARN_RESOURCE_TYPES
+      resourceTypes: AUTO_LEARN_RULE_RESOURCE_TYPES
     }
   };
 }
@@ -1775,6 +1822,15 @@ async function ensureManualHostBlocked(host, sourcePageUrl = "") {
     };
   }
 
+  if (isProtectedCompatibilityHost(normalizedHost)) {
+    return {
+      added: false,
+      exists: false,
+      skipped: true,
+      reason: "protected-host"
+    };
+  }
+
   const state = await getManualBlockState();
 
   if (Object.hasOwn(state.hostRules, normalizedHost)) {
@@ -2057,10 +2113,50 @@ async function hydrateManualStateFromDynamicRules() {
   scheduleManualBlockPersist();
 }
 
+async function pruneProtectedManualHostRules() {
+  const state = await getManualBlockState();
+  const removeRuleIds = [];
+  let removedHosts = 0;
+
+  for (const [host, entry] of Object.entries(state.hostRules)) {
+    if (!isProtectedCompatibilityHost(host)) {
+      continue;
+    }
+
+    const ruleId = toNonNegativeInteger(entry?.ruleId, 0);
+
+    if (ruleId >= MANUAL_RULE_ID_START && ruleId <= MANUAL_RULE_ID_END) {
+      removeRuleIds.push(ruleId);
+    }
+
+    delete state.hostRules[host];
+    removedHosts += 1;
+  }
+
+  if (removeRuleIds.length > 0) {
+    try {
+      await chrome.declarativeNetRequest.updateDynamicRules({
+        addRules: [],
+        removeRuleIds: [...new Set(removeRuleIds)]
+      });
+    } catch (error) {
+      console.warn("Failed to prune protected manual host rules", error);
+    }
+  }
+
+  if (removedHosts > 0) {
+    scheduleManualBlockPersist();
+  }
+}
+
 async function ensureAutoLearnHostPromoted(state, host, confidence, hitsAtPromotion) {
   const normalizedHost = normalizeHost(host);
 
   if (!normalizedHost || Object.hasOwn(state.promoted, normalizedHost)) {
+    return false;
+  }
+
+  if (isProtectedCompatibilityHost(normalizedHost)) {
     return false;
   }
 
@@ -2135,6 +2231,10 @@ async function processAutoLearnObservation({
   const contextHost = normalizeHost(context.hostname);
 
   if (!candidateHost || !contextHost || !isThirdPartyHost(candidateHost, contextHost)) {
+    return;
+  }
+
+  if (isProtectedCompatibilityHost(candidateHost) || isProtectedCompatibilityHost(contextHost)) {
     return;
   }
 
@@ -2254,6 +2354,52 @@ async function hydrateAutoLearnStateFromDynamicRules() {
   scheduleAutoLearnPersist();
 }
 
+async function pruneProtectedAutoLearnRules() {
+  const state = await getAutoLearnState();
+  const removeRuleIds = [];
+  let removedPromotedHosts = 0;
+  let removedCandidateHosts = 0;
+
+  for (const [host, entry] of Object.entries(state.promoted)) {
+    if (!isProtectedCompatibilityHost(host)) {
+      continue;
+    }
+
+    const ruleId = toNonNegativeInteger(entry?.ruleId, 0);
+
+    if (ruleId >= AUTO_LEARN_RULE_ID_START && ruleId < MANUAL_RULE_ID_START) {
+      removeRuleIds.push(ruleId);
+    }
+
+    delete state.promoted[host];
+    removedPromotedHosts += 1;
+  }
+
+  for (const host of Object.keys(state.candidates)) {
+    if (!isProtectedCompatibilityHost(host)) {
+      continue;
+    }
+
+    delete state.candidates[host];
+    removedCandidateHosts += 1;
+  }
+
+  if (removeRuleIds.length > 0) {
+    try {
+      await chrome.declarativeNetRequest.updateDynamicRules({
+        addRules: [],
+        removeRuleIds: [...new Set(removeRuleIds)]
+      });
+    } catch (error) {
+      console.warn("Failed to prune protected auto-learn rules", error);
+    }
+  }
+
+  if (removedPromotedHosts > 0 || removedCandidateHosts > 0) {
+    scheduleAutoLearnPersist();
+  }
+}
+
 function setAutoLearnWebRequestListener(enabled) {
   const beforeRequestApi = chrome.webRequest?.onBeforeRequest;
 
@@ -2286,8 +2432,8 @@ function setAutoLearnWebRequestListener(enabled) {
   beforeRequestApi.addListener(
     autoLearnWebRequestListener,
     {
-      urls: ["http://*/*", "https://*/*"],
-      types: AUTO_LEARN_RESOURCE_TYPES
+      urls: AUTO_LEARN_WEBREQUEST_URL_PATTERNS,
+      types: AUTO_LEARN_OBSERVATION_RESOURCE_TYPES
     },
     []
   );
@@ -2295,6 +2441,7 @@ function setAutoLearnWebRequestListener(enabled) {
 
 async function initializeAutoLearning() {
   await hydrateAutoLearnStateFromDynamicRules();
+  await pruneProtectedAutoLearnRules();
 
   const settings = await getSettings();
   updateAdaptiveHostSets(settings);
@@ -2304,6 +2451,7 @@ async function initializeAutoLearning() {
 
 async function initializeManualBlocking() {
   await hydrateManualStateFromDynamicRules();
+  await pruneProtectedManualHostRules();
   await ensureContextMenuRegistration();
 }
 

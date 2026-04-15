@@ -17,7 +17,14 @@ const EARLY_HIDE_SELECTORS = [
   "[class*='ad-slot' i]",
   "[id*='ad-slot' i]",
   "[class*='adunit' i]",
-  "[id*='adunit' i]"
+  "[id*='adunit' i]",
+  "#interads",
+  ".interads",
+  ".interads-close",
+  ".interads-kkcount-down",
+  ".rIdHlTQAtJaQ",
+  ".rIdHlTQAtJaQ-bg",
+  ".an-sponsored"
 ].join(",");
 
 const DEFINITE_AD_SELECTORS = [
@@ -37,7 +44,21 @@ const DEFINITE_AD_SELECTORS = [
   "iframe[src*='adservice.google.']",
   "iframe[src*='adnxs.com']",
   "iframe[src*='taboola.com']",
-  "iframe[src*='outbrain.com']"
+  "iframe[src*='outbrain.com']",
+  "iframe[src*='bannersnack.com/iframe/embed.js' i]",
+  "#interads",
+  "#interads-bar",
+  "#interads-cnt",
+  "#interads-tit",
+  "#inter-mess",
+  ".interads",
+  ".interads-close",
+  ".interads-kkcount-down",
+  ".rIdHlTQAtJaQ",
+  ".rIdHlTQAtJaQ-bg",
+  ".rIdHlTQAtJaQ-default",
+  ".an-sponsored",
+  ".an-advert-banner"
 ].join(",");
 
 const AD_NAME_HINT_SELECTORS = [
@@ -52,7 +73,11 @@ const AD_NAME_HINT_SELECTORS = [
   "[id*='promo-banner' i]",
   "[class*='promo-banner' i]",
   "[id*='sticky-ad' i]",
-  "[class*='sticky-ad' i]"
+  "[class*='sticky-ad' i]",
+  "[id*='interstitial' i]",
+  "[class*='interstitial' i]",
+  "[id*='interads' i]",
+  "[class*='interads' i]"
 ].join(",");
 
 const BANNER_DIMENSIONS = new Set([
@@ -69,10 +94,13 @@ const BANNER_DIMENSIONS = new Set([
 
 const AD_TOKEN_REGEX = /(^|[\W_])(ad|ads|advert|sponsor|sponsored|promo|promoted)([\W_]|$)/i;
 const BANNER_TOKEN_REGEX = /(^|[\W_])(banner|billboard|leaderboard)([\W_]|$)/i;
+const INTERSTITIAL_SECTION_TEXT_REGEX =
+  /did you receive a interstitial ad|^\s*interstitial ads\s*$/i;
+const CLEANUP_THROTTLE_MS = 180;
 
 let blockingEnabled = true;
 let observer = null;
-let cleanupQueued = false;
+let cleanupTimer = null;
 
 function injectEarlyHideStyle() {
   if (!document.documentElement) {
@@ -90,9 +118,15 @@ function injectEarlyHideStyle() {
   (document.head || document.documentElement).appendChild(style);
 }
 
-function hideElement(element) {
+function hideElement(element, markerAttribute = "data-zn-blocker-banner-hidden") {
+  if (!(element instanceof Element)) {
+    return;
+  }
+
   element.style.setProperty("display", "none", "important");
-  element.setAttribute("data-zn-blocker-banner-hidden", "true");
+  element.style.setProperty("visibility", "hidden", "important");
+  element.style.setProperty("pointer-events", "none", "important");
+  element.setAttribute(markerAttribute, "true");
 }
 
 function queryAllIncludingRoot(root, selector) {
@@ -176,22 +210,52 @@ function hideLikelyBanners(root = document) {
   }
 }
 
+function hideKnownInterstitialContainers(root = document) {
+  const interstitialNodes = queryAllIncludingRoot(
+    root,
+    "#interads, #interads-bar, #interads-cnt, #interads-tit, #inter-mess, .interads, .interads-close, .interads-kkcount-down, .rIdHlTQAtJaQ, .rIdHlTQAtJaQ-bg, .rIdHlTQAtJaQ-default, .an-sponsored, .an-advert-banner"
+  );
+
+  for (const node of interstitialNodes) {
+    hideElement(node, "data-zn-blocker-interstitial-hidden");
+
+    const container = node.closest("#interads, .rIdHlTQAtJaQ, .elementor-column, section");
+    if (container && container !== node) {
+      hideElement(container, "data-zn-blocker-interstitial-hidden");
+    }
+  }
+
+  const headings = queryAllIncludingRoot(root, "h1, h2, h3, h4, h5");
+
+  for (const heading of headings) {
+    const text = (heading.textContent || "").trim();
+
+    if (!text || !INTERSTITIAL_SECTION_TEXT_REGEX.test(text)) {
+      continue;
+    }
+
+    const section = heading.closest(".elementor-section, .elementor-column, section, article");
+    if (section) {
+      hideElement(section, "data-zn-blocker-interstitial-hidden");
+    }
+  }
+}
+
 function runCleanup(root = document) {
+  hideKnownInterstitialContainers(root);
   hideDefiniteAds(root);
   hideLikelyBanners(root);
 }
 
 function queueCleanup() {
-  if (cleanupQueued || !blockingEnabled) {
+  if (cleanupTimer || !blockingEnabled) {
     return;
   }
 
-  cleanupQueued = true;
-
-  queueMicrotask(() => {
-    cleanupQueued = false;
+  cleanupTimer = setTimeout(() => {
+    cleanupTimer = null;
     runCleanup(document);
-  });
+  }, CLEANUP_THROTTLE_MS);
 }
 
 function startObserver() {
@@ -204,17 +268,24 @@ function startObserver() {
       return;
     }
 
+    let hasAddedElement = false;
+
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
-        if (!(node instanceof Element)) {
-          continue;
+        if (node instanceof Element) {
+          hasAddedElement = true;
+          break;
         }
+      }
 
-        runCleanup(node);
+      if (hasAddedElement) {
+        break;
       }
     }
 
-    queueCleanup();
+    if (hasAddedElement) {
+      queueCleanup();
+    }
   });
 
   observer.observe(document.documentElement, {
@@ -225,11 +296,21 @@ function startObserver() {
 
 function stopObserver() {
   if (!observer) {
+    if (cleanupTimer) {
+      clearTimeout(cleanupTimer);
+      cleanupTimer = null;
+    }
+
     return;
   }
 
   observer.disconnect();
   observer = null;
+
+  if (cleanupTimer) {
+    clearTimeout(cleanupTimer);
+    cleanupTimer = null;
+  }
 }
 
 function applyBlockState(enabled) {
