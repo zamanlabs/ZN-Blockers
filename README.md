@@ -1,10 +1,10 @@
 <p align="center">
-    <img src="assets/logo/zn-blocker-logo.svg" alt="ZN blocker logo" width="520" />
+    <img src="assets/logo/zn-blocker-logo.svg" alt="OrbitBlocker logo" width="520" />
 </p>
 
-# ZN blocker
+# OrbitBlocker
 
-ZN blocker is a Manifest V3 extension for Chromium browsers that aggressively suppresses ads, sponsored content, tracking scripts, and OEM telemetry endpoints while keeping the UI simple for daily use.
+OrbitBlocker is a Manifest V3 extension for Chromium browsers that aggressively suppresses ads, sponsored content, tracking scripts, and OEM telemetry endpoints while keeping the UI simple for daily use.
 
 <p align="left">
     <img src="https://img.shields.io/badge/version-1.1.3-22c55e" alt="Version 1.1.3" />
@@ -26,7 +26,7 @@ ZN blocker is a Manifest V3 extension for Chromium browsers that aggressively su
 
 The image below is the latest real test snapshot requested in this update.
 
-![ZN blocker test result showing 100 percent score with all checks blocked](assets/screenshots/block-test-2026-04-10.jpeg)
+![OrbitBlocker test result showing 100 percent score with all checks blocked](assets/screenshots/block-test-2026-04-10.jpeg)
 
 - Score: **100%**
 - Total checks: **133**
@@ -63,9 +63,9 @@ The image below is the latest real test snapshot requested in this update.
 1. Open the repository Releases page.
 2. Download the asset matching your browser.
 3. Prefer CRX builds:
-     - `ZN-blocker-vX.Y.Z-chrome.crx`
-     - `ZN-blocker-vX.Y.Z-edge.crx`
-     - `ZN-blocker-vX.Y.Z-chromium.crx`
+    - `OrbitBlocker-vX.Y.Z-chrome.crx`
+    - `OrbitBlocker-vX.Y.Z-edge.crx`
+    - `OrbitBlocker-vX.Y.Z-chromium.crx`
 4. If CRX install is blocked by policy, use ZIP and load unpacked.
 
 ### Install from Source

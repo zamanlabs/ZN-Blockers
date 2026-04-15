@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "ZN blocker",
-  "description": "Open-source tracker and promoted-content blocker for YouTube and the broader web.",
+  "name": "OrbitBlocker",
+  "description": "Open-source ad, tracker, and sponsored-content blocker for YouTube and the broader web.",
   "version": "1.1.3",
   "minimum_chrome_version": "114",
   "permissions": [
@@ -28,7 +28,7 @@
     "128": "assets/icons/icon-128.png"
   },
   "action": {
-    "default_title": "ZN blocker",
+    "default_title": "OrbitBlocker",
     "default_icon": {
       "16": "assets/icons/icon-16.png",
       "32": "assets/icons/icon-32.png"
@@ -127,6 +127,11 @@
         "id": "adguard_base_ads",
         "enabled": true,
         "path": "rules/adguard-base-global.json"
+      },
+      {
+        "id": "ublock_origin_global",
+        "enabled": true,
+        "path": "rules/ublock-origin-global.json"
       },
       {
         "id": "provider_hard_shield",

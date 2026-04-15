@@ -1,6 +1,6 @@
-# ZN blocker Release Notes
+# OrbitBlocker Release Notes
 
-This document tracks public milestone highlights for ZN blocker.
+This document tracks public milestone highlights for OrbitBlocker.
 
 ## v1.1.3 (Current Stable)
 
@@ -30,15 +30,15 @@ Release date: 2026-04-10
 
 ### Included Release Asset Pattern
 
-- `ZN-blocker-v1.1.3-chrome.crx`
-- `ZN-blocker-v1.1.3-edge.crx`
-- `ZN-blocker-v1.1.3-chromium.crx`
-- `ZN-blocker-v1.1.3-*.zip`
-- `ZN-blocker-v1.1.3-SHA256SUMS.txt`
+- `OrbitBlocker-v1.1.3-chrome.crx`
+- `OrbitBlocker-v1.1.3-edge.crx`
+- `OrbitBlocker-v1.1.3-chromium.crx`
+- `OrbitBlocker-v1.1.3-*.zip`
+- `OrbitBlocker-v1.1.3-SHA256SUMS.txt`
 
 ### Test Result Snapshot
 
-![ZN blocker test result showing 100 percent score with all checks blocked](assets/screenshots/block-test-2026-04-10.jpeg)
+![OrbitBlocker test result showing 100 percent score with all checks blocked](assets/screenshots/block-test-2026-04-10.jpeg)
 
 - Blocking score: **100%**
 - Total checks: **133**

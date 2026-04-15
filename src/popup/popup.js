@@ -108,7 +108,7 @@ let statusTimer = null;
 let currentSettings = { ...DEFAULT_SETTINGS };
 
 function getDefaultHintText() {
-  return "Press the center button to start or stop every shield instantly.";
+  return "Use ON or OFF to control protection.";
 }
 
 function setHintText(message, isError = false) {
@@ -152,8 +152,8 @@ function renderMasterState(settings) {
   masterPowerButton.setAttribute("aria-pressed", String(allOn));
   masterPowerLabel.textContent = allOn ? "ON" : "OFF";
   masterStateText.textContent = allOn
-    ? "All filters and features are active."
-    : "All shields are currently off.";
+    ? "Protection is active."
+    : "Protection is off.";
 
   statusPill.textContent = allOn ? "All ON" : "All OFF";
   statusPill.classList.toggle("on", allOn);

@@ -98,6 +98,15 @@ function renderRecentRules(snapshot) {
   recentRulesetList.innerHTML = "";
 
   if (!recent.available) {
+    if (
+      typeof recent.error === "string" &&
+      recent.error.includes("MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL")
+    ) {
+      recentSummary.textContent =
+        "Chrome rate-limited matched-rule queries. Wait a few minutes and refresh.";
+      return;
+    }
+
     recentSummary.textContent =
       recent.error ||
       "Recent matched-rule queries are not currently available in this browser context.";

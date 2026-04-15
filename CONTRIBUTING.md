@@ -1,6 +1,6 @@
-# Contributing to ZN blocker
+# Contributing to OrbitBlocker
 
-Thanks for helping improve ZN blocker.
+Thanks for helping improve OrbitBlocker.
 
 ## 1. Before You Start
 

@@ -94,7 +94,7 @@ if (-not (Test-Path $manifestPath)) {
 $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json
 $version = if ([string]::IsNullOrWhiteSpace($VersionOverride)) { $manifest.version } else { $VersionOverride }
 
-$releaseBase = "ZN-blocker-v$version"
+$releaseBase = "OrbitBlocker-v$version"
 $distDir = Join-Path $repoRoot "dist"
 if (-not (Test-Path $distDir)) {
   New-Item -Path $distDir -ItemType Directory | Out-Null

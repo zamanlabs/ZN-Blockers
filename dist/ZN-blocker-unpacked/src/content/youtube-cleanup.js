@@ -259,7 +259,7 @@ function requestCompatibilityConfirmation(trigger) {
     typeof window.confirm !== "function"
       ? true
       : window.confirm(
-          "ZN blocker can enable YouTube compatibility mode " +
+          "OrbitBlocker can enable YouTube compatibility mode " +
             `${reasonText}. This disables YouTube network and UI cleanup shields until you turn them back on in the extension settings. Continue?`
         );
 

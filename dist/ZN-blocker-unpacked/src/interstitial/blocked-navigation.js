@@ -5,6 +5,7 @@ const reasonText = document.getElementById("reasonText");
 const statusText = document.getElementById("statusText");
 const goBackButton = document.getElementById("goBackButton");
 const proceedButton = document.getElementById("proceedButton");
+const trustSiteButton = document.getElementById("trustSiteButton");
 
 function parseHttpUrl(rawUrl, baseUrl = undefined) {
   if (typeof rawUrl !== "string" || !rawUrl.trim()) {
@@ -32,6 +33,7 @@ function setStatus(message, isError = false) {
 function setButtonsDisabled(disabled) {
   proceedButton.disabled = disabled;
   goBackButton.disabled = disabled;
+  trustSiteButton.disabled = disabled;
 }
 
 function describeReason(reason) {
@@ -83,6 +85,35 @@ async function proceedToDestination() {
   }
 }
 
+async function trustAndProceed() {
+  if (!targetUrl) {
+    setStatus("Destination URL is unavailable.", true);
+    return;
+  }
+
+  setButtonsDisabled(true);
+  setStatus("Saving site and opening...");
+
+  try {
+    const response = await chrome.runtime.sendMessage({
+      type: "TRUST_BLOCKED_TARGET_AND_PROCEED",
+      blockedUrl: blockedUrl ? blockedUrl.href : "",
+      targetUrl: targetUrl.href,
+      sourceUrl: sourceUrl ? sourceUrl.href : "",
+      reason
+    });
+
+    if (!response?.ok) {
+      throw new Error(response?.error || "Unable to save trust rule");
+    }
+  } catch {
+    proceedToDestination().catch(() => {
+      setStatus("Unable to continue navigation.", true);
+      setButtonsDisabled(false);
+    });
+  }
+}
+
 function goBack() {
   setButtonsDisabled(true);
 
@@ -110,4 +141,11 @@ proceedButton.addEventListener("click", () => {
 
 goBackButton.addEventListener("click", () => {
   goBack();
+});
+
+trustSiteButton.addEventListener("click", () => {
+  trustAndProceed().catch(() => {
+    setStatus("Unable to save trust rule.", true);
+    setButtonsDisabled(false);
+  });
 });

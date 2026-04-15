@@ -25,6 +25,7 @@ const RULESETS_BY_SETTING = Object.freeze({
   blockGlobalAdsEnabled: [
     "easylist_global_ads",
     "adguard_base_ads",
+    "ublock_origin_global",
     "provider_hard_shield"
   ],
   blockOemGoogleTrackingEnabled: ["oem_google_tracking_shield"],
@@ -37,6 +38,7 @@ const RULESET_LABELS = Object.freeze({
   easyprivacy_global: "EasyPrivacy Global",
   easylist_global_ads: "EasyList Global Ads",
   adguard_base_ads: "AdGuard Base Ads",
+  ublock_origin_global: "uBlock Origin Global Bundle",
   provider_hard_shield: "Provider Hard Shield",
   oem_google_tracking_shield: "OEM + Google Tracking Shield",
   popup_redirect_shield: "Popup Redirect Shield"
@@ -50,6 +52,7 @@ const RULE_CONTROL_KEYS = new Set(Object.keys(RULESETS_BY_SETTING));
 const DIAGNOSTICS_STORAGE_KEY = "diagnosticsState";
 const DIAGNOSTICS_FLUSH_DELAY_MS = 1500;
 const RECENT_MATCH_LOOKBACK_MS = 24 * 60 * 60 * 1000;
+const RECENT_MATCH_QUERY_MIN_INTERVAL_MS = 60 * 1000;
 
 const AUTO_LEARN_STORAGE_KEY = "autoLearnState";
 const AUTO_LEARN_FLUSH_DELAY_MS = 2000;
@@ -79,6 +82,9 @@ const NAVIGATION_ALLOW_RULE_ID_END = 659999;
 const NAVIGATION_ALLOW_RULE_TTL_MS = 45000;
 const BLOCK_WARNING_PAGE_PATH = "src/interstitial/blocked-navigation.html";
 const BLOCKED_NAVIGATION_EVENT_COOLDOWN_MS = 2500;
+const TRUSTED_NAVIGATION_STORAGE_KEY = "trustedNavigationState";
+const TRUSTED_NAVIGATION_MAX_HOSTS = 800;
+const TRUSTED_NAVIGATION_MAX_URLS = 2000;
 
 const MANUAL_BLOCK_RESOURCE_TYPES = Object.freeze([
   "main_frame",
@@ -177,6 +183,10 @@ const AUTO_LEARN_RESOURCE_TYPES = Object.freeze([
 let diagnosticsStatePromise = null;
 let diagnosticsFlushTimer = null;
 let staticRuleCountPromise = null;
+let recentMatchedRulesCache = {
+  fetchedAt: 0,
+  summary: null
+};
 let diagnosticsListenerStatus = {
   attached: false,
   available: false,
@@ -199,6 +209,7 @@ let manualBlockingHydrated = false;
 let nextNavigationAllowRuleId = NAVIGATION_ALLOW_RULE_ID_START;
 const temporaryNavigationAllowRules = new Map();
 const blockedNavigationEventTimestamps = new Map();
+let trustedNavigationStatePromise = null;
 
 function toMessageError(error) {
   if (error instanceof Error) {
@@ -427,6 +438,16 @@ async function loadStaticRuleCounts() {
       }
 
       try {
+        const ublockOriginMeta = await readJsonFromRuntime("rules/ublock-origin-global.meta.json");
+        counts.ublock_origin_global = toNonNegativeInteger(
+          ublockOriginMeta.generatedRules,
+          null
+        );
+      } catch {
+        counts.ublock_origin_global = null;
+      }
+
+      try {
         const oemGoogleTrackingShield = await readJsonFromRuntime(
           "rules/oem-google-tracking-shield.json"
         );
@@ -468,6 +489,18 @@ async function loadStaticRuleCounts() {
 }
 
 async function getRecentMatchedRulesSummary() {
+  const now = Date.now();
+
+  if (
+    recentMatchedRulesCache.summary &&
+    now - recentMatchedRulesCache.fetchedAt < RECENT_MATCH_QUERY_MIN_INTERVAL_MS
+  ) {
+    return {
+      ...recentMatchedRulesCache.summary,
+      byRuleset: { ...recentMatchedRulesCache.summary.byRuleset }
+    };
+  }
+
   const summary = {
     available: false,
     windowMs: RECENT_MATCH_LOOKBACK_MS,
@@ -478,6 +511,13 @@ async function getRecentMatchedRulesSummary() {
 
   if (typeof chrome.declarativeNetRequest.getMatchedRules !== "function") {
     summary.error = "Matched-rule query API is not available in this browser build.";
+    recentMatchedRulesCache = {
+      fetchedAt: now,
+      summary: {
+        ...summary,
+        byRuleset: { ...summary.byRuleset }
+      }
+    };
     return summary;
   }
 
@@ -493,9 +533,39 @@ async function getRecentMatchedRulesSummary() {
 
     summary.available = true;
     summary.total = rulesMatchedInfo.length;
+
+    recentMatchedRulesCache = {
+      fetchedAt: now,
+      summary: {
+        ...summary,
+        byRuleset: { ...summary.byRuleset }
+      }
+    };
+
     return summary;
   } catch (error) {
-    summary.error = toMessageError(error);
+    const message = toMessageError(error);
+
+    if (
+      message.includes("MAX_GETMATCHEDRULES_CALLS_PER_INTERVAL") &&
+      recentMatchedRulesCache.summary
+    ) {
+      return {
+        ...recentMatchedRulesCache.summary,
+        byRuleset: { ...recentMatchedRulesCache.summary.byRuleset },
+        error: `${message} Using cached recent matches.`
+      };
+    }
+
+    summary.error = message;
+    recentMatchedRulesCache = {
+      fetchedAt: now,
+      summary: {
+        ...summary,
+        byRuleset: { ...summary.byRuleset }
+      }
+    };
+
     return summary;
   }
 }
@@ -963,6 +1033,207 @@ function parseHttpUrl(rawUrl, baseUrl = undefined) {
   }
 }
 
+function createTrustedNavigationState() {
+  return {
+    hosts: [],
+    urls: []
+  };
+}
+
+function normalizeTrustedNavigationUrl(rawUrl, baseUrl = undefined) {
+  const parsed = parseHttpUrl(rawUrl, baseUrl);
+
+  if (!parsed) {
+    return "";
+  }
+
+  parsed.hash = "";
+  return parsed.href;
+}
+
+function normalizeTrustedNavigationState(rawValue) {
+  const fallback = createTrustedNavigationState();
+
+  if (!rawValue || typeof rawValue !== "object") {
+    return fallback;
+  }
+
+  const hosts = [];
+  const hostSeen = new Set();
+
+  for (const rawHost of Array.isArray(rawValue.hosts) ? rawValue.hosts : []) {
+    const host = normalizeHost(rawHost);
+
+    if (!host || hostSeen.has(host)) {
+      continue;
+    }
+
+    hostSeen.add(host);
+    hosts.push(host);
+
+    if (hosts.length >= TRUSTED_NAVIGATION_MAX_HOSTS) {
+      break;
+    }
+  }
+
+  const urls = [];
+  const urlSeen = new Set();
+
+  for (const rawUrl of Array.isArray(rawValue.urls) ? rawValue.urls : []) {
+    const normalizedUrl = normalizeTrustedNavigationUrl(rawUrl);
+
+    if (!normalizedUrl || urlSeen.has(normalizedUrl)) {
+      continue;
+    }
+
+    urlSeen.add(normalizedUrl);
+    urls.push(normalizedUrl);
+
+    if (urls.length >= TRUSTED_NAVIGATION_MAX_URLS) {
+      break;
+    }
+  }
+
+  return {
+    hosts,
+    urls
+  };
+}
+
+async function getTrustedNavigationState() {
+  if (!trustedNavigationStatePromise) {
+    trustedNavigationStatePromise = chrome.storage.local
+      .get([TRUSTED_NAVIGATION_STORAGE_KEY])
+      .then((stored) => normalizeTrustedNavigationState(stored[TRUSTED_NAVIGATION_STORAGE_KEY]));
+  }
+
+  return trustedNavigationStatePromise;
+}
+
+async function persistTrustedNavigationState() {
+  const state = await getTrustedNavigationState();
+  await chrome.storage.local.set({
+    [TRUSTED_NAVIGATION_STORAGE_KEY]: state
+  });
+}
+
+function isTrustedNavigationHost(state, host) {
+  if (!state || !host || !Array.isArray(state.hosts) || state.hosts.length === 0) {
+    return false;
+  }
+
+  for (const trustedHost of state.hosts) {
+    if (host === trustedHost || host.endsWith(`.${trustedHost}`)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function parseBlockedNavigationPayload(payload) {
+  const blocked = parseHttpUrl(payload?.blockedUrl, payload?.sourceUrl || undefined);
+  const target =
+    parseHttpUrl(payload?.targetUrl, blocked?.href || payload?.sourceUrl || undefined) || blocked;
+
+  if (!blocked || !target) {
+    return null;
+  }
+
+  const source = parseHttpUrl(payload?.sourceUrl || "");
+  const targetUrl = normalizeTrustedNavigationUrl(target.href);
+  const targetHost = normalizeHost(target.hostname);
+
+  if (!targetUrl || !targetHost) {
+    return null;
+  }
+
+  return {
+    blockedUrl: blocked.href,
+    targetUrl,
+    sourceUrl: source ? source.href : "",
+    reason: String(payload?.reason || "suspicious-navigation"),
+    targetHost
+  };
+}
+
+async function isTrustedNavigationDestination(rawTargetUrl) {
+  const targetUrl = normalizeTrustedNavigationUrl(rawTargetUrl);
+
+  if (!targetUrl) {
+    return false;
+  }
+
+  const parsedTarget = parseHttpUrl(targetUrl);
+
+  if (!parsedTarget) {
+    return false;
+  }
+
+  const targetHost = normalizeHost(parsedTarget.hostname);
+  const state = await getTrustedNavigationState();
+
+  if (state.urls.includes(targetUrl)) {
+    return true;
+  }
+
+  return isTrustedNavigationHost(state, targetHost);
+}
+
+async function trustNavigationDestination(rawTargetUrl) {
+  const targetUrl = normalizeTrustedNavigationUrl(rawTargetUrl);
+  const parsedTarget = parseHttpUrl(targetUrl);
+
+  if (!targetUrl || !parsedTarget) {
+    return {
+      saved: false,
+      reason: "invalid-target"
+    };
+  }
+
+  const targetHost = normalizeHost(parsedTarget.hostname);
+
+  if (!targetHost) {
+    return {
+      saved: false,
+      reason: "invalid-host"
+    };
+  }
+
+  const state = await getTrustedNavigationState();
+  let changed = false;
+
+  if (!state.urls.includes(targetUrl)) {
+    state.urls.unshift(targetUrl);
+
+    if (state.urls.length > TRUSTED_NAVIGATION_MAX_URLS) {
+      state.urls.length = TRUSTED_NAVIGATION_MAX_URLS;
+    }
+
+    changed = true;
+  }
+
+  if (!state.hosts.includes(targetHost)) {
+    state.hosts.unshift(targetHost);
+
+    if (state.hosts.length > TRUSTED_NAVIGATION_MAX_HOSTS) {
+      state.hosts.length = TRUSTED_NAVIGATION_MAX_HOSTS;
+    }
+
+    changed = true;
+  }
+
+  if (changed) {
+    await persistTrustedNavigationState();
+  }
+
+  return {
+    saved: changed,
+    host: targetHost,
+    url: targetUrl
+  };
+}
+
 function getTabIdFromSender(sender) {
   return Number.isInteger(sender?.tab?.id) ? sender.tab.id : null;
 }
@@ -1165,23 +1436,20 @@ async function openBlockedNavigationWarning(tabId, payload) {
     };
   }
 
-  const blocked = parseHttpUrl(payload.blockedUrl, payload.sourceUrl || undefined);
-  const target =
-    parseHttpUrl(payload.targetUrl, blocked?.href || payload.sourceUrl || undefined) || blocked;
+  const navigation = parseBlockedNavigationPayload(payload);
 
-  if (!blocked || !target) {
+  if (!navigation) {
     return {
       ok: false,
       error: "Invalid blocked navigation details"
     };
   }
 
-  const source = parseHttpUrl(payload.sourceUrl || "");
   const warningUrl = buildBlockWarningUrl({
-    blockedUrl: blocked.href,
-    targetUrl: target.href,
-    sourceUrl: source ? source.href : "",
-    reason: String(payload.reason || "suspicious-navigation")
+    blockedUrl: navigation.blockedUrl,
+    targetUrl: navigation.targetUrl,
+    sourceUrl: navigation.sourceUrl,
+    reason: navigation.reason
   });
 
   await chrome.tabs.update(tabId, {
@@ -1201,28 +1469,70 @@ async function proceedBlockedNavigation(tabId, payload) {
     };
   }
 
-  const blocked = parseHttpUrl(payload.blockedUrl, payload.sourceUrl || undefined);
-  const destination =
-    parseHttpUrl(payload.targetUrl, blocked?.href || payload.sourceUrl || undefined) || blocked;
+  const navigation = parseBlockedNavigationPayload(payload);
 
-  if (!destination) {
+  if (!navigation) {
     return {
       ok: false,
       error: "Invalid destination URL"
     };
   }
 
-  const allowRule = await installTemporaryNavigationAllowRule(tabId, destination.hostname);
+  const allowRule = await installTemporaryNavigationAllowRule(tabId, navigation.targetHost);
 
   await chrome.tabs.update(tabId, {
-    url: destination.href
+    url: navigation.targetUrl
   });
 
   return {
     ok: true,
-    destinationUrl: destination.href,
+    destinationUrl: navigation.targetUrl,
     allowRuleApplied: allowRule.applied,
     allowRuleReason: allowRule.reason
+  };
+}
+
+async function handleSuspiciousNavigation(tabId, payload) {
+  const navigation = parseBlockedNavigationPayload(payload);
+
+  if (!navigation) {
+    return {
+      ok: false,
+      error: "Invalid blocked navigation details"
+    };
+  }
+
+  const trusted = await isTrustedNavigationDestination(navigation.targetUrl);
+
+  if (trusted) {
+    const outcome = await proceedBlockedNavigation(tabId, navigation);
+    return {
+      ...outcome,
+      trustedBypass: true
+    };
+  }
+
+  return openBlockedNavigationWarning(tabId, navigation);
+}
+
+async function trustBlockedNavigationAndProceed(tabId, payload) {
+  const navigation = parseBlockedNavigationPayload(payload);
+
+  if (!navigation) {
+    return {
+      ok: false,
+      error: "Invalid blocked navigation details"
+    };
+  }
+
+  const trustResult = await trustNavigationDestination(navigation.targetUrl);
+  const proceedResult = await proceedBlockedNavigation(tabId, navigation);
+
+  return {
+    ...proceedResult,
+    trustedSaved: trustResult.saved,
+    trustedHost: trustResult.host || "",
+    trustedUrl: trustResult.url || navigation.targetUrl
   };
 }
 
@@ -2402,7 +2712,28 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "OPEN_BLOCK_WARNING") {
     (async () => {
       const tabId = getTabIdFromSender(sender);
-      const outcome = await openBlockedNavigationWarning(tabId, {
+      const outcome = await handleSuspiciousNavigation(tabId, {
+        blockedUrl: typeof message.blockedUrl === "string" ? message.blockedUrl : "",
+        targetUrl: typeof message.targetUrl === "string" ? message.targetUrl : "",
+        sourceUrl: typeof message.sourceUrl === "string" ? message.sourceUrl : "",
+        reason: typeof message.reason === "string" ? message.reason : ""
+      });
+
+      sendResponse(outcome);
+    })().catch((error) => {
+      sendResponse({
+        ok: false,
+        error: toMessageError(error)
+      });
+    });
+
+    return true;
+  }
+
+  if (message.type === "TRUST_BLOCKED_TARGET_AND_PROCEED") {
+    (async () => {
+      const tabId = getTabIdFromSender(sender);
+      const outcome = await trustBlockedNavigationAndProceed(tabId, {
         blockedUrl: typeof message.blockedUrl === "string" ? message.blockedUrl : "",
         targetUrl: typeof message.targetUrl === "string" ? message.targetUrl : "",
         sourceUrl: typeof message.sourceUrl === "string" ? message.sourceUrl : "",
@@ -2672,13 +3003,27 @@ chrome.webNavigation?.onErrorOccurred?.addListener(
       return;
     }
 
-    openBlockedNavigationWarning(details.tabId, {
-      blockedUrl: details.url,
-      targetUrl: details.url,
-      sourceUrl: "",
-      reason: "blocked-by-rule"
-    }).catch((error) => {
-      console.warn("Failed to open blocked navigation warning", error);
+    (async () => {
+      const trusted = await isTrustedNavigationDestination(details.url);
+
+      if (trusted) {
+        await proceedBlockedNavigation(details.tabId, {
+          blockedUrl: details.url,
+          targetUrl: details.url,
+          sourceUrl: "",
+          reason: "trusted-bypass"
+        });
+        return;
+      }
+
+      await openBlockedNavigationWarning(details.tabId, {
+        blockedUrl: details.url,
+        targetUrl: details.url,
+        sourceUrl: "",
+        reason: "blocked-by-rule"
+      });
+    })().catch((error) => {
+      console.warn("Failed to process blocked navigation warning", error);
     });
   },
   {

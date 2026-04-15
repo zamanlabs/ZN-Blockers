@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>ZN blocker</title>
+    <title>OrbitBlocker</title>
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
@@ -13,13 +13,13 @@
           <img
             class="hero-mark"
             src="../../assets/logo/zn-blocker-mark.svg"
-            alt="ZN blocker logo"
+            alt="OrbitBlocker logo"
             width="36"
             height="36"
           />
           <div>
-            <p class="eyebrow">Unified Shield Control</p>
-            <h1>ZN blocker</h1>
+            <p class="eyebrow">Simple Protection</p>
+            <h1>OrbitBlocker</h1>
           </div>
         </div>
         <span class="status-pill" id="statusPill">All OFF</span>
@@ -42,12 +42,12 @@
       </section>
 
       <details class="feature-dropdown" id="featureDropdown">
-        <summary>Feature Controls</summary>
+        <summary>Advanced Controls</summary>
         <section class="settings-panel" aria-label="Feature settings">
           <label class="toggle-row" for="globalTrackerToggle">
             <span class="toggle-copy">
               <strong>Global tracker filters</strong>
-              <small>EasyPrivacy tracking and analytics suppression</small>
+              <small>Blocks common tracking and analytics requests</small>
             </span>
             <span class="switch">
               <input id="globalTrackerToggle" type="checkbox" />
@@ -58,7 +58,7 @@
           <label class="toggle-row" for="globalAdsToggle">
             <span class="toggle-copy">
               <strong>Global ad filters</strong>
-              <small>EasyList, AdGuard, and provider hard shield</small>
+              <small>EasyList, AdGuard, uBlock Origin, and hard-shield rules</small>
             </span>
             <span class="switch">
               <input id="globalAdsToggle" type="checkbox" />
@@ -190,7 +190,7 @@
       </section>
 
       <p id="statusText" class="hint" aria-live="polite">
-        Use the center button to start or stop all shields at once.
+        Use ON or OFF to control protection quickly.
       </p>
 
       <section id="supportModal" class="support-modal" hidden>

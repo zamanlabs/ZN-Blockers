@@ -1,6 +1,6 @@
 # Security Policy
 
-ZN blocker security reports must be submitted privately.
+OrbitBlocker security reports must be submitted privately.
 
 ## 1. How to Report
 

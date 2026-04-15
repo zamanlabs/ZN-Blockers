@@ -325,13 +325,11 @@ function openHumanNavigationWarning(navigationInfo) {
     reason: navigationInfo.reason || "suspicious-navigation"
   };
 
-  chrome.runtime.sendMessage(payload, () => {
-    if (!chrome.runtime.lastError) {
-      return;
+  chrome.runtime.sendMessage(payload, (response) => {
+    if (chrome.runtime.lastError || response?.ok === false) {
+      warningNavigationInProgress = false;
+      window.location.href = navigationInfo.targetUrl || navigationInfo.blockedUrl;
     }
-
-    warningNavigationInProgress = false;
-    window.location.href = navigationInfo.targetUrl || navigationInfo.blockedUrl;
   });
 }
 

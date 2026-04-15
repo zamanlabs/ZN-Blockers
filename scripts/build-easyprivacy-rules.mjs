@@ -34,6 +34,15 @@ const LIST_SPECS = [
     outputPath: path.resolve("rules", "adguard-base-global.json"),
     metaPath: path.resolve("rules", "adguard-base-global.meta.json"),
     maxRules: toMaxRules(process.env.MAX_RULES_ADGUARD, MAX_RULES_DEFAULT)
+  },
+  {
+    id: "ublock_origin_global",
+    name: "uBlock Origin Global Bundle",
+    sourceType: "file",
+    sourcePath: path.resolve("rules", "ublock-origin-bundle.txt"),
+    outputPath: path.resolve("rules", "ublock-origin-global.json"),
+    metaPath: path.resolve("rules", "ublock-origin-global.meta.json"),
+    maxRules: toMaxRules(process.env.MAX_RULES_UBLOCK_ORIGIN, MAX_RULES_DEFAULT)
   }
 ];
 
@@ -325,7 +334,94 @@ function incrementCounter(counterMap, key) {
   counterMap.set(key, current + 1);
 }
 
+function getTargetListSpecs() {
+  const rawIds = String(process.env.RULE_LIST_IDS || "").trim();
+
+  if (!rawIds) {
+    return LIST_SPECS;
+  }
+
+  const requestedIds = rawIds
+    .split(",")
+    .map((token) => token.trim())
+    .filter(Boolean);
+  const availableIds = new Set(LIST_SPECS.map((spec) => spec.id));
+  const unknownIds = requestedIds.filter((id) => !availableIds.has(id));
+
+  if (unknownIds.length > 0) {
+    throw new Error(`Unknown RULE_LIST_IDS entries: ${unknownIds.join(", ")}`);
+  }
+
+  const requestedSet = new Set(requestedIds);
+  return LIST_SPECS.filter((spec) => requestedSet.has(spec.id));
+}
+
+async function readDirectorySource(spec) {
+  const entries = await fs.readdir(spec.sourceDir, {
+    withFileTypes: true
+  });
+
+  const fileNames = entries
+    .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".txt"))
+    .map((entry) => entry.name)
+    .sort((nameA, nameB) => nameA.localeCompare(nameB));
+
+  if (fileNames.length === 0) {
+    throw new Error(`No .txt filter files found in ${toRelativePath(spec.sourceDir)}`);
+  }
+
+  const chunks = [];
+
+  for (const fileName of fileNames) {
+    const filePath = path.join(spec.sourceDir, fileName);
+    const fileText = await fs.readFile(filePath, "utf8");
+    chunks.push(`! --- source: ${fileName} ---`);
+    chunks.push(fileText);
+    chunks.push("");
+  }
+
+  const sourceText = chunks.join("\n");
+
+  if (spec.cachePath) {
+    await fs.mkdir(path.dirname(spec.cachePath), {
+      recursive: true
+    });
+    await fs.writeFile(spec.cachePath, sourceText, "utf8");
+  }
+
+  return {
+    sourceText,
+    sourceDescriptor: `${toRelativePath(spec.sourceDir)} (${fileNames.length} files)`,
+    usedCache: false,
+    sourceFileCount: fileNames.length
+  };
+}
+
 async function readSource(spec) {
+  if (spec.sourceType === "directory") {
+    try {
+      return await readDirectorySource(spec);
+    } catch (error) {
+      if (!spec.cachePath) {
+        throw error;
+      }
+
+      try {
+        const sourceText = await fs.readFile(spec.cachePath, "utf8");
+        return {
+          sourceText,
+          sourceDescriptor: `${toRelativePath(spec.sourceDir)} (cache: ${toRelativePath(spec.cachePath)})`,
+          usedCache: true,
+          sourceFileCount: null
+        };
+      } catch {
+        throw new Error(
+          `Failed to read ${toRelativePath(spec.sourceDir)} and no cache found at ${toRelativePath(spec.cachePath)}: ${String(error)}`
+        );
+      }
+    }
+  }
+
   if (spec.sourceType === "file") {
     const sourceText = await fs.readFile(spec.sourcePath, "utf8");
     return {
@@ -433,7 +529,7 @@ function buildRulesFromSource(sourceText, maxRules) {
 }
 
 async function buildList(spec) {
-  const { sourceText, sourceDescriptor, usedCache } = await readSource(spec);
+  const { sourceText, sourceDescriptor, usedCache, sourceFileCount = 1 } = await readSource(spec);
   const built = buildRulesFromSource(sourceText, spec.maxRules);
 
   const metadata = {
@@ -442,6 +538,7 @@ async function buildList(spec) {
     source: sourceDescriptor,
     sourceUrl: spec.sourceType === "url" ? spec.sourceUrl : null,
     usedCache,
+    sourceFileCount,
     generatedAt: new Date().toISOString(),
     maxRules: spec.maxRules,
     sourceTotalLines: built.sourceTotalLines,
@@ -465,9 +562,10 @@ async function buildList(spec) {
 }
 
 async function main() {
+  const targetSpecs = getTargetListSpecs();
   const summaries = [];
 
-  for (const spec of LIST_SPECS) {
+  for (const spec of targetSpecs) {
     const summary = await buildList(spec);
     summaries.push(summary);
 
